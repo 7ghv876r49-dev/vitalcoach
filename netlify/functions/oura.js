@@ -64,13 +64,13 @@ exports.handler = async (event) => {
       // From daily_readiness
       readiness_score: r ? r.score : null,
       temperature_deviation: r ? r.temperature_deviation : null,
-      // HRV from readiness contributors (most reliable source)
-      average_hrv: r && r.contributors ? r.contributors.hrv_balance : null,
+      // HRV avg in ms from sleep session (real milliseconds value)
+      average_hrv: mainSleep ? mainSleep.average_hrv : null,
       // From daily_sleep  
       sleep_score: ds ? ds.score : null,
       // From sleep sessions (detailed)
       total_sleep_duration: mainSleep ? mainSleep.total_sleep_duration : null,  // seconds
-      awake_time: mainSleep ? mainSleep.awake_duration : null,                   // seconds
+      awake_time: mainSleep ? mainSleep.awake_time : null,                       // seconds
       lowest_heart_rate: mainSleep ? mainSleep.lowest_heart_rate : null,
       deep_sleep_duration: mainSleep ? mainSleep.deep_sleep_duration : null,     // seconds
       rem_sleep_duration: mainSleep ? mainSleep.rem_sleep_duration : null,       // seconds
