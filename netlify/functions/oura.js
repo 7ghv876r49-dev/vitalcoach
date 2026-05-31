@@ -2,6 +2,8 @@
 // Fetches Oura data and returns all fields needed for Vital Coach inputs tab
 // Requires env var: OURA_PAT
 
+const fetch = globalThis.fetch || require('node-fetch');
+
 exports.handler = async (event) => {
   const CORS = {
     'Access-Control-Allow-Origin': '*',
