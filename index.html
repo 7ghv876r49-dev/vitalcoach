@@ -1278,7 +1278,7 @@ function saveOuraPAT() {
 }
 
 function initOuraSection() {
-  const hasPAT = !!sessionStorage.getItem('oura_pat');
+  const hasPAT = true;
   // Show setup panel if no token saved
   document.getElementById('oura-pat-setup').style.display = hasPAT ? 'none' : 'block';
   // Update date label
