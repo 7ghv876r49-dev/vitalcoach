@@ -1,7 +1,6 @@
 // netlify/functions/oura.js
-// Proxies Oura API calls to avoid CORS issues.
-// Requires env var: OURA_PAT (personal access token from cloud.ouraring.com/personal-access-tokens)
-// Deploy: set OURA_PAT in Netlify dashboard → Site settings → Environment variables
+// Fetches Oura data and returns all fields needed for Vital Coach inputs tab
+// Requires env var: OURA_PAT
 
 exports.handler = async (event) => {
   const CORS = {
@@ -19,70 +18,76 @@ exports.handler = async (event) => {
     return {
       statusCode: 500,
       headers: CORS,
-      body: JSON.stringify({ error: 'OURA_PAT env var not set. Add it in Netlify dashboard.' }),
+      body: JSON.stringify({ error: 'OURA_PAT env var not set.' }),
     };
   }
 
-  // ?endpoint=daily_readiness&start_date=2026-05-30&end_date=2026-05-31
   const params = event.queryStringParameters || {};
-  const endpoint = params.endpoint || 'daily_readiness';
   const today = new Date().toISOString().split('T')[0];
   const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
   const startDate = params.start_date || yesterday;
   const endDate = params.end_date || today;
-
-  const ENDPOINTS = {
-    daily_readiness: `https://api.ouraring.com/v2/usercollection/daily_readiness?start_date=${startDate}&end_date=${endDate}`,
-    daily_sleep:     `https://api.ouraring.com/v2/usercollection/daily_sleep?start_date=${startDate}&end_date=${endDate}`,
-    heartrate:       `https://api.ouraring.com/v2/usercollection/heartrate?start_datetime=${startDate}T00:00:00&end_datetime=${endDate}T23:59:59`,
-    daily_spo2:      `https://api.ouraring.com/v2/usercollection/daily_spo2?start_date=${startDate}&end_date=${endDate}`,
-    // Convenience: fetch all sleep+readiness in one call
-    summary: null,
-  };
-
-  if (endpoint === 'summary') {
-    // Parallel fetch of readiness + sleep
-    try {
-      const headers = { Authorization: `Bearer ${token}` };
-      const [readinessRes, sleepRes, spo2Res] = await Promise.all([
-        fetch(`https://api.ouraring.com/v2/usercollection/daily_readiness?start_date=${startDate}&end_date=${endDate}`, { headers }),
-        fetch(`https://api.ouraring.com/v2/usercollection/daily_sleep?start_date=${startDate}&end_date=${endDate}`, { headers }),
-        fetch(`https://api.ouraring.com/v2/usercollection/daily_spo2?start_date=${startDate}&end_date=${endDate}`, { headers }),
-      ]);
-      const [readiness, sleep, spo2] = await Promise.all([
-        readinessRes.json(), sleepRes.json(), spo2Res.json(),
-      ]);
-      return {
-        statusCode: 200,
-        headers: { ...CORS, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ readiness, sleep, spo2 }),
-      };
-    } catch (err) {
-      return {
-        statusCode: 500,
-        headers: CORS,
-        body: JSON.stringify({ error: err.message }),
-      };
-    }
-  }
-
-  const url = ENDPOINTS[endpoint];
-  if (!url) {
-    return {
-      statusCode: 400,
-      headers: CORS,
-      body: JSON.stringify({ error: `Unknown endpoint: ${endpoint}. Use: daily_readiness, daily_sleep, heartrate, daily_spo2, summary` }),
-    };
-  }
+  const headers = { Authorization: `Bearer ${token}` };
 
   try {
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-    const data = await res.json();
-    return {
-      statusCode: res.status,
-      headers: { ...CORS, 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+    // Fetch all needed endpoints in parallel
+    const [readinessRes, dailySleepRes, sleepRes, activityRes] = await Promise.all([
+      fetch(`https://api.ouraring.com/v2/usercollection/daily_readiness?start_date=${startDate}&end_date=${endDate}`, { headers }),
+      fetch(`https://api.ouraring.com/v2/usercollection/daily_sleep?start_date=${startDate}&end_date=${endDate}`, { headers }),
+      fetch(`https://api.ouraring.com/v2/usercollection/sleep?start_date=${startDate}&end_date=${endDate}`, { headers }),
+      fetch(`https://api.ouraring.com/v2/usercollection/daily_activity?start_date=${startDate}&end_date=${endDate}`, { headers }),
+    ]);
+
+    const [readiness, dailySleep, sleep, activity] = await Promise.all([
+      readinessRes.json(),
+      dailySleepRes.json(),
+      sleepRes.json(),
+      activityRes.json(),
+    ]);
+
+    // Get latest entries
+    const r = readiness.data && readiness.data[readiness.data.length - 1];
+    const ds = dailySleep.data && dailySleep.data[dailySleep.data.length - 1];
+    const a = activity.data && activity.data[activity.data.length - 1];
+
+    // Sleep sessions — find the longest one (main sleep) for the latest date
+    const latestDate = ds ? ds.day : endDate;
+    const sleepSessions = sleep.data ? sleep.data.filter(s => s.day === latestDate && s.type === 'long_sleep') : [];
+    const mainSleep = sleepSessions.length > 0 ? sleepSessions[0] : 
+                      (sleep.data && sleep.data.filter(s => s.day === latestDate).sort((a,b) => (b.total_sleep_duration||0) - (a.total_sleep_duration||0))[0]);
+
+    // Build response with all fields
+    const result = {
+      date: latestDate,
+      // From daily_readiness
+      readiness_score: r ? r.score : null,
+      temperature_deviation: r ? r.temperature_deviation : null,
+      // From daily_sleep  
+      sleep_score: ds ? ds.score : null,
+      // From sleep sessions (detailed)
+      total_sleep_duration: mainSleep ? mainSleep.total_sleep_duration : null,  // seconds
+      awake_time: mainSleep ? mainSleep.awake_duration : null,                   // seconds
+      average_hrv: mainSleep ? mainSleep.average_hrv : null,
+      lowest_heart_rate: mainSleep ? mainSleep.lowest_heart_rate : null,
+      deep_sleep_duration: mainSleep ? mainSleep.deep_sleep_duration : null,     // seconds
+      rem_sleep_duration: mainSleep ? mainSleep.rem_sleep_duration : null,       // seconds
+      // From daily_activity
+      steps: a ? a.steps : null,
+      // Raw data for debugging
+      _raw: {
+        readiness: r || null,
+        daily_sleep: ds || null,
+        main_sleep_keys: mainSleep ? Object.keys(mainSleep) : [],
+        activity: a || null,
+      }
     };
+
+    return {
+      statusCode: 200,
+      headers: { ...CORS, 'Content-Type': 'application/json' },
+      body: JSON.stringify(result),
+    };
+
   } catch (err) {
     return {
       statusCode: 500,
