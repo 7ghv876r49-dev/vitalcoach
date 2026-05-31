@@ -1316,7 +1316,7 @@ async function syncOuraPAT() {
     // Fall back to direct API with user's PAT
     let readiness, sleep;
     try {
-      const proxyRes = await fetch(OURA_PROXY + '?endpoint=summary&start_date=' + yesterday + '&end_date=' + today);
+      const proxyRes = await fetch('/.netlify/functions/oura?endpoint=summary&start_date=' + yesterday + '&end_date=' + today);
       if (proxyRes.ok) {
         const d = await proxyRes.json();
         readiness = d.readiness; sleep = d.sleep;
