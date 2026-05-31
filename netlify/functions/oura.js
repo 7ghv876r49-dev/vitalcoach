@@ -50,11 +50,13 @@ exports.handler = async (event) => {
     const ds = dailySleep.data && dailySleep.data[dailySleep.data.length - 1];
     const a = activity.data && activity.data[activity.data.length - 1];
 
-    // Sleep sessions — find the longest one (main sleep) for the latest date
+    // Sleep sessions — find the longest session across the date range
     const latestDate = ds ? ds.day : endDate;
-    const sleepSessions = sleep.data ? sleep.data.filter(s => s.day === latestDate && s.type === 'long_sleep') : [];
-    const mainSleep = sleepSessions.length > 0 ? sleepSessions[0] : 
-                      (sleep.data && sleep.data.filter(s => s.day === latestDate).sort((a,b) => (b.total_sleep_duration||0) - (a.total_sleep_duration||0))[0]);
+    // Try today first, then yesterday, take the longest session
+    const allSessions = sleep.data || [];
+    const mainSleep = allSessions
+      .filter(s => s.total_sleep_duration > 0)
+      .sort((a,b) => (b.total_sleep_duration||0) - (a.total_sleep_duration||0))[0] || null;
 
     // Build response with all fields
     const result = {
@@ -62,12 +64,13 @@ exports.handler = async (event) => {
       // From daily_readiness
       readiness_score: r ? r.score : null,
       temperature_deviation: r ? r.temperature_deviation : null,
+      // HRV from readiness contributors (most reliable source)
+      average_hrv: r && r.contributors ? r.contributors.hrv_balance : null,
       // From daily_sleep  
       sleep_score: ds ? ds.score : null,
       // From sleep sessions (detailed)
       total_sleep_duration: mainSleep ? mainSleep.total_sleep_duration : null,  // seconds
       awake_time: mainSleep ? mainSleep.awake_duration : null,                   // seconds
-      average_hrv: mainSleep ? mainSleep.average_hrv : null,
       lowest_heart_rate: mainSleep ? mainSleep.lowest_heart_rate : null,
       deep_sleep_duration: mainSleep ? mainSleep.deep_sleep_duration : null,     // seconds
       rem_sleep_duration: mainSleep ? mainSleep.rem_sleep_duration : null,       // seconds
@@ -78,6 +81,7 @@ exports.handler = async (event) => {
         readiness: r || null,
         daily_sleep: ds || null,
         main_sleep_keys: mainSleep ? Object.keys(mainSleep) : [],
+        main_sleep: mainSleep || null,
         activity: a || null,
       }
     };
