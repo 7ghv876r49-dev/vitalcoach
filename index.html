@@ -1068,7 +1068,7 @@ input[type="file"].hidden-file-input { display: none; }
       <div class="meal-entry-row"><input class="meal-entry-field" id="meal-desc-breakfast" placeholder="e.g. eggs, Greek yogurt, berries"/><input class="meal-entry-num" type="number" id="meal-cal-breakfast" placeholder="cal" inputmode="numeric"/></div>
       <div class="meal-entry-row"><input class="meal-entry-field" id="meal-pro-src-breakfast" placeholder="protein source"/><input class="meal-entry-num" type="number" id="meal-pro-breakfast" placeholder="g pro" inputmode="numeric"/></div>
       <input type="file" accept="image/*" capture="environment" class="hidden-file-input" id="photo-input-breakfast" onchange="handleMealPhoto('breakfast', this)"/>
-      <button class="meal-photo-btn" id="photo-btn-breakfast" onclick="document.getElementById('photo-input-breakfast').click()">
+      <button class="meal-photo-btn" id="photo-btn-breakfast" onclick="ById('photo-input-breakfast').click()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         📸 Photo estimate macros
       </button>
@@ -1265,7 +1265,7 @@ async function handleMealPhoto(mealId, input) {
 // Personal access token stored in sessionStorage (cleared when browser closes)
 // API calls go through /api/oura Netlify proxy to avoid CORS, OR direct if PAT set in env
 
-const OURA_PROXY = '/api/oura'; // Netlify function
+const OURA_PROXY = '/.netlify/functions/oura'; // Netlify function
 
 function saveOuraPAT() {
   const val = document.getElementById('oura-pat-input').value.trim();
@@ -1280,7 +1280,7 @@ function saveOuraPAT() {
 function initOuraSection() {
   const hasPAT = true;
   // Show setup panel if no token saved
-  document.getElementById('oura-pat-setup').style.display = hasPAT ? 'none' : 'block';
+  document.getElementById('oura-pat-setup').style.display = 'none';
   // Update date label
   const now = new Date();
   const days = Math.floor((now - new Date('2025-05-13')) / 86400000);
