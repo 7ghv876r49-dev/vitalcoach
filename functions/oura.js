@@ -1,70 +1,94 @@
-// functions/oura.js
-// Cloudflare Pages Function — proxies Oura API calls
-// Requires env var: OURA_PAT (set in Cloudflare Pages dashboard)
-
 export async function onRequest(context) {
-  const CORS = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Content-Type': 'application/json',
+  const PAT = context.env.OURA_PAT;
+  if (!PAT) {
+    return new Response(JSON.stringify({ error: 'OURA_PAT not configured' }), {
+      status: 500, headers: { 'Content-Type': 'application/json' }
+    });
+  }
+ 
+  const headers = {
+    'Authorization': `Bearer ${PAT}`,
+    'Content-Type': 'application/json'
   };
-
-  if (context.request.method === 'OPTIONS') {
-    return new Response('', { status: 200, headers: CORS });
-  }
-
-  const token = context.env.OURA_PAT;
-  if (!token) {
-    return new Response(JSON.stringify({ error: 'OURA_PAT env var not set.' }), { status: 500, headers: CORS });
-  }
-
-  const url = new URL(context.request.url);
-  const today = new Date().toISOString().split('T')[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-  const startDate = url.searchParams.get('start_date') || yesterday;
-  const endDate = url.searchParams.get('end_date') || today;
-  const headers = { Authorization: `Bearer ${token}` };
-  const base = 'https://api.ouraring.com/v2/usercollection';
-
+ 
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const twoDaysAgo = new Date(now - 2 * 86400000).toISOString().split('T')[0];
+ 
   try {
-    const [readinessRes, dailySleepRes, sleepRes, activityRes] = await Promise.all([
-      fetch(`${base}/daily_readiness?start_date=${startDate}&end_date=${endDate}`, { headers }),
-      fetch(`${base}/daily_sleep?start_date=${startDate}&end_date=${endDate}`, { headers }),
-      fetch(`${base}/sleep?start_date=${startDate}&end_date=${endDate}`, { headers }),
-      fetch(`${base}/daily_activity?start_date=${startDate}&end_date=${endDate}`, { headers }),
+    const [readinessRes, sleepRes, activityRes] = await Promise.all([
+      fetch(`https://api.ouraring.com/v2/usercollection/daily_readiness?start_date=${twoDaysAgo}&end_date=${today}`, { headers }),
+      fetch(`https://api.ouraring.com/v2/usercollection/sleep?start_date=${twoDaysAgo}&end_date=${today}`, { headers }),
+      fetch(`https://api.ouraring.com/v2/usercollection/daily_activity?start_date=${twoDaysAgo}&end_date=${today}`, { headers }),
     ]);
-
-    const [readiness, dailySleep, sleep, activity] = await Promise.all([
-      readinessRes.json(), dailySleepRes.json(), sleepRes.json(), activityRes.json(),
+ 
+    const [readinessData, sleepData, activityData] = await Promise.all([
+      readinessRes.json(),
+      sleepRes.json(),
+      activityRes.json(),
     ]);
-
-    const r  = readiness.data  && readiness.data[readiness.data.length - 1];
-    const ds = dailySleep.data && dailySleep.data[dailySleep.data.length - 1];
-    const a  = activity.data   && activity.data[activity.data.length - 1];
-
-    const allSessions = sleep.data || [];
-    const mainSleep = allSessions
-      .filter(s => s.total_sleep_duration > 0)
-      .sort((a, b) => (b.total_sleep_duration || 0) - (a.total_sleep_duration || 0))[0] || null;
-
+ 
+    const r = readinessData.data?.[readinessData.data.length - 1];
+    const sleepSessions = (sleepData.data || []).filter(s => s.type === 'long_sleep');
+    const s = sleepSessions[sleepSessions.length - 1];
+    const a = activityData.data?.[activityData.data.length - 1];
+ 
+    // HRV: avg from sleep session; max from 5-min HRV samples
+    let hrvAvg = '';
+    let hrvMax = '';
+    if (s) {
+      hrvAvg = s.average_hrv ? Math.round(s.average_hrv) : '';
+      if (s.hrv && Array.isArray(s.hrv.items)) {
+        const valid = s.hrv.items.filter(v => v !== null && v > 0);
+        if (valid.length > 0) hrvMax = Math.round(Math.max(...valid));
+      }
+    }
+ 
+    // RHR: resting_heart_rate from readiness = the reported RHR value (matches Oura app)
+    // lowest_heart_rate from sleep = true overnight minimum (min RHR)
+    const rhr    = r?.resting_heart_rate ?? '';
+    const rhrMin = s?.lowest_heart_rate ?? '';
+ 
+    // Total sleep + awake
+    function fmtSleep(sec) {
+      if (!sec) return '';
+      const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+      return h + 'h' + (m > 0 ? m + 'm' : '');
+    }
+    const totalSleep = s?.total_sleep_duration ? fmtSleep(s.total_sleep_duration) : '';
+    const awakeMin   = s?.awake_time ? Math.round(s.awake_time / 60) : '';
+ 
+    // Body temp: Oura returns deviation in CELSIUS — convert to Fahrenheit (×1.8, no +32 since it's a delta)
+    let bodyTemp = '';
+    if (r?.temperature_deviation !== undefined && r?.temperature_deviation !== null) {
+      const tempF = r.temperature_deviation * 1.8;
+      bodyTemp = (tempF >= 0 ? '+' : '') + tempF.toFixed(1);
+    }
+ 
+    const steps = a?.steps ?? '';
+ 
     const result = {
-      date:                 ds        ? ds.day                         : endDate,
-      readiness_score:      r         ? r.score                        : null,
-      temperature_deviation:r         ? r.temperature_deviation        : null,
-      sleep_score:          ds        ? ds.score                       : null,
-      average_hrv:          mainSleep ? mainSleep.average_hrv          : null,
-      lowest_heart_rate:    mainSleep ? mainSleep.lowest_heart_rate    : null,
-      total_sleep_duration: mainSleep ? mainSleep.total_sleep_duration : null,
-      awake_time:           mainSleep ? mainSleep.awake_time           : null,
-      deep_sleep_duration:  mainSleep ? mainSleep.deep_sleep_duration  : null,
-      rem_sleep_duration:   mainSleep ? mainSleep.rem_sleep_duration   : null,
-      steps:                a         ? a.steps                        : null,
+      // Field names match what syncOuraPAT() reads in index.html
+      readiness_score:    r?.score ?? '',
+      sleep_score:        s?.score ?? '',
+      average_hrv:        hrvAvg,
+      hrv_max:            hrvMax,
+      resting_heart_rate: rhr,
+      lowest_heart_rate:  rhrMin,
+      total_sleep_duration_fmt: totalSleep,
+      awake_time_min:     awakeMin,
+      temperature_deviation_f: bodyTemp,
+      steps:              steps,
+      _date:              s?.day ?? r?.day ?? today,
     };
-
-    return new Response(JSON.stringify(result), { status: 200, headers: CORS });
-
+ 
+    return new Response(JSON.stringify(result), {
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
+ 
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: CORS });
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500, headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
