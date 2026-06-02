@@ -57,7 +57,8 @@ export async function onRequest(context) {
     }
  
     const hrvAvg = s.average_hrv ? Math.round(s.average_hrv) : '';
-    const rhr = s.lowest_heart_rate || r?.resting_heart_rate || s.average_heart_rate || '';
+    // Target the true overnight average for RHR, and use lowest as a fallback
+    const rhr = s.average_heart_rate ? Math.round(s.average_heart_rate) : (r?.resting_heart_rate || '');
     const rhrMin = s.lowest_heart_rate || '';
     
     const sortedDailySleep = (dailySleepData.data || []).sort((a, b) => new Date(b.day) - new Date(a.day));
@@ -110,3 +111,4 @@ export async function onRequest(context) {
     });
   }
 }
+ 
