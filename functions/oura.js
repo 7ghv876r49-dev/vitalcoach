@@ -93,12 +93,6 @@ export async function onRequest(context) {
       steps:                    steps,
       _date:                    s.day,
       _steps_date:              sortedActivity[1]?.day || 'none',
-      _debug: {
-        daily_sleep_scores: (dailySleepData.data||[]).map(d=>d.day+':'+d.score).join('|'),
-        activity_days: (activityData.data||[]).map(a=>a.day+':'+a.steps).join('|'),
-        session_day: s.day,
-        yesterday: yesterday,
-      }
     };
  
     return new Response(JSON.stringify(result), {
@@ -111,4 +105,3 @@ export async function onRequest(context) {
     });
   }
 }
- 
