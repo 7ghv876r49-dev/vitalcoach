@@ -42,21 +42,22 @@ export async function onRequest(context) {
       ? (sleepSessions.find(x => x.day === ds.day) || sleepSessions[sleepSessions.length - 1])
       : sleepSessions[sleepSessions.length - 1];
  
-    // HRV avg + max
-    // Try raw sleep session first (has HRV samples for max), fall back to daily_sleep contributors
+    // HRV — from daily_sleep contributors (where Oura actually stores it)
     let hrvAvg = '', hrvMax = '';
     if (s && s.day === ds?.day) {
-      // Raw session matches daily_sleep date — use it
       hrvAvg = s.average_hrv ? Math.round(s.average_hrv) : '';
       if (s.hrv && Array.isArray(s.hrv.items)) {
         const valid = s.hrv.items.filter(v => v !== null && v > 0);
         if (valid.length > 0) hrvMax = Math.round(Math.max(...valid));
       }
-    } else {
-      // Raw session is older — use daily_sleep average_hrv
-      hrvAvg = ds?.average_hrv ? Math.round(ds.average_hrv) : (s?.average_hrv ? Math.round(s.average_hrv) : '');
-      // Max HRV not available without raw session — leave blank for now
-      hrvMax = s?.average_hrv ? Math.round(s.average_hrv) : ''; // best approximation
+    }
+    // Fall back to daily_sleep contributors for HRV avg
+    if (!hrvAvg && ds?.contributors) {
+      hrvAvg = ds.contributors.hrv_balance ?? ds.contributors.average_hrv ?? '';
+    }
+    // Fall back to readiness contributors
+    if (!hrvAvg && r?.contributors) {
+      hrvAvg = r.contributors.hrv_balance ?? '';
     }
  
     // RHR from readiness; min RHR from sleep
@@ -103,12 +104,9 @@ export async function onRequest(context) {
       _date:                    ds?.day ?? s?.day ?? r?.day ?? today,
       _steps_date:              yesterdayActivity ? yesterday : (todayActivity ? today : 'unknown'),
       _debug: {
-        daily_sleep_days: dailySleepEntries.map(d => d.day + ':score=' + d.score + ':hrv=' + d.average_hrv).join('|'),
-        readiness_days:   (readinessData.data||[]).map(r => r.day + ':' + r.score).join('|'),
-        sleep_session:    s?.day + ':' + s?.type + ':hrv=' + s?.average_hrv,
-        ds_day:           ds?.day,
-        ds_keys:          ds ? Object.keys(ds).join(',') : 'none',
-        r_keys:           r ? Object.keys(r).join(',') : 'none',
+        ds_contributors: JSON.stringify(ds?.contributors),
+        r_contributors:  JSON.stringify(r?.contributors),
+        sleep_session:   s?.day + ':hrv=' + s?.average_hrv,
       },
     };
  
@@ -122,3 +120,4 @@ export async function onRequest(context) {
     });
   }
 }
+ 
