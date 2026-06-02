@@ -44,10 +44,12 @@ export async function onRequest(context) {
       }
     }
  
-    // RHR: resting_heart_rate from readiness = the reported RHR value (matches Oura app)
-    // lowest_heart_rate from sleep = true overnight minimum (min RHR)
-    const rhr    = r?.resting_heart_rate ?? '';
+    // RHR: try resting_heart_rate first, fall back to lowest_heart_rate
+    const rhr    = r?.resting_heart_rate || s?.lowest_heart_rate || '';
     const rhrMin = s?.lowest_heart_rate ?? '';
+ 
+    // Sleep score: try score directly, also try contributors
+    const sleepScore = s?.score || s?.sleep_score || '';
  
     // Total sleep + awake
     function fmtSleep(sec) {
@@ -75,7 +77,7 @@ export async function onRequest(context) {
  
     const result = {
       readiness_score:    r?.score ?? '',
-      sleep_score:        s?.score ?? '',
+      sleep_score:        sleepScore,
       average_hrv:        hrvAvg,
       hrv_max:            hrvMax,
       resting_heart_rate: rhr,
@@ -86,6 +88,7 @@ export async function onRequest(context) {
       steps:              steps,
       _date:              s?.day ?? r?.day ?? today,
       _steps_date:        yesterdayActivity ? yesterday : (todayActivity ? today : 'unknown'),
+      _debug:             { sleep_type: s?.type, sleep_day: s?.day, sleep_score_raw: s?.score, rhr_raw: r?.resting_heart_rate },
     };
  
     return new Response(JSON.stringify(result), {
@@ -98,4 +101,4 @@ export async function onRequest(context) {
     });
   }
 }
- 
+  
