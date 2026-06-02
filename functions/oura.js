@@ -22,15 +22,15 @@ export async function onRequest(context) {
   const yesterday = new Date(now - 86400000).toISOString().split('T')[0];
  
   try {
-    const [sleepRes, readinessRes, activityRes, dailySleepRes] = await Promise.all([
+    const [sleepRes, readinessRes, dailySleepRes, activityRes] = await Promise.all([
       fetch(`https://api.ouraring.com/v2/usercollection/sleep?start_date=${startStr}&end_date=${endStr}`, { headers }),
       fetch(`https://api.ouraring.com/v2/usercollection/daily_readiness?start_date=${startStr}&end_date=${endStr}`, { headers }),
       fetch(`https://api.ouraring.com/v2/usercollection/daily_sleep?start_date=${startStr}&end_date=${endStr}`, { headers }),
       fetch(`https://api.ouraring.com/v2/usercollection/daily_activity?start_date=${startStr}&end_date=${endStr}`, { headers }),
     ]);
  
-    const [sleepData, readinessData, activityData, dailySleepData] = await Promise.all([
-      sleepRes.json(), readinessRes.json(), activityRes.json(), dailySleepRes.json()
+    const [sleepData, readinessData, dailySleepData, activityData] = await Promise.all([
+      sleepRes.json(), readinessRes.json(), dailySleepRes.json(), activityRes.json()
     ]);
  
     const sessions = (sleepData.data || [])
@@ -59,9 +59,9 @@ export async function onRequest(context) {
     const hrvAvg = s.average_hrv ? Math.round(s.average_hrv) : '';
     const rhr = s.lowest_heart_rate || r?.resting_heart_rate || s.average_heart_rate || '';
     const rhrMin = s.lowest_heart_rate || '';
-    const dailySleepEntries = (dailySleepData.data || []).sort((a,b) => new Date(b.day) - new Date(a.day));
-    const ds = dailySleepEntries.find(d => d.day === s.day) || dailySleepEntries[0];
-    const sleepScore = s.score || ds?.score || '';
+    
+    const sortedDailySleep = (dailySleepData.data || []).sort((a, b) => new Date(b.day) - new Date(a.day));
+    const sleepScore = sortedDailySleep[0]?.score || '';
  
     let hrvMax = '';
     if (s.hrv && Array.isArray(s.hrv.items)) {
@@ -75,8 +75,8 @@ export async function onRequest(context) {
       bodyTemp = (f >= 0 ? '+' : '') + f.toFixed(1);
     }
  
-    const acts = (activityData.data || []).sort((a, b) => new Date(b.day) - new Date(a.day));
-    const steps = acts.find(a => a.day === yesterday)?.steps ?? acts[1]?.steps ?? acts[0]?.steps ?? '';
+    const sortedActivity = (activityData.data || []).sort((a, b) => new Date(b.day) - new Date(a.day));
+    const steps = sortedActivity[1]?.steps ?? sortedActivity[0]?.steps ?? '';
  
     const result = {
       readiness_score:          r?.score ?? '',
@@ -91,7 +91,13 @@ export async function onRequest(context) {
       temperature_deviation_f:  bodyTemp,
       steps:                    steps,
       _date:                    s.day,
-      _steps_date:              acts[0]?.day || 'none',
+      _steps_date:              sortedActivity[1]?.day || 'none',
+      _debug: {
+        daily_sleep_scores: (dailySleepData.data||[]).map(d=>d.day+':'+d.score).join('|'),
+        activity_days: (activityData.data||[]).map(a=>a.day+':'+a.steps).join('|'),
+        session_day: s.day,
+        yesterday: yesterday,
+      }
     };
  
     return new Response(JSON.stringify(result), {
