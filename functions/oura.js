@@ -22,14 +22,15 @@ export async function onRequest(context) {
   const yesterday = new Date(now - 86400000).toISOString().split('T')[0];
  
   try {
-    const [sleepRes, readinessRes, activityRes] = await Promise.all([
+    const [sleepRes, readinessRes, activityRes, dailySleepRes] = await Promise.all([
       fetch(`https://api.ouraring.com/v2/usercollection/sleep?start_date=${startStr}&end_date=${endStr}`, { headers }),
       fetch(`https://api.ouraring.com/v2/usercollection/daily_readiness?start_date=${startStr}&end_date=${endStr}`, { headers }),
+      fetch(`https://api.ouraring.com/v2/usercollection/daily_sleep?start_date=${startStr}&end_date=${endStr}`, { headers }),
       fetch(`https://api.ouraring.com/v2/usercollection/daily_activity?start_date=${startStr}&end_date=${endStr}`, { headers }),
     ]);
  
-    const [sleepData, readinessData, activityData] = await Promise.all([
-      sleepRes.json(), readinessRes.json(), activityRes.json()
+    const [sleepData, readinessData, activityData, dailySleepData] = await Promise.all([
+      sleepRes.json(), readinessRes.json(), activityRes.json(), dailySleepRes.json()
     ]);
  
     const sessions = (sleepData.data || [])
@@ -58,7 +59,9 @@ export async function onRequest(context) {
     const hrvAvg = s.average_hrv ? Math.round(s.average_hrv) : '';
     const rhr = s.lowest_heart_rate || r?.resting_heart_rate || s.average_heart_rate || '';
     const rhrMin = s.lowest_heart_rate || '';
-    const sleepScore = s.score || '';
+    const dailySleepEntries = (dailySleepData.data || []).sort((a,b) => new Date(b.day) - new Date(a.day));
+    const ds = dailySleepEntries.find(d => d.day === s.day) || dailySleepEntries[0];
+    const sleepScore = s.score || ds?.score || '';
  
     let hrvMax = '';
     if (s.hrv && Array.isArray(s.hrv.items)) {
@@ -73,7 +76,7 @@ export async function onRequest(context) {
     }
  
     const acts = (activityData.data || []).sort((a, b) => new Date(b.day) - new Date(a.day));
-    const steps = acts[0]?.steps ?? '';
+    const steps = acts.find(a => a.day === yesterday)?.steps ?? acts[1]?.steps ?? acts[0]?.steps ?? '';
  
     const result = {
       readiness_score:          r?.score ?? '',
