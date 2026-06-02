@@ -12,32 +12,38 @@ export async function onRequest(context) {
   };
  
   const now = new Date();
-  const today = now.toISOString().split('T')[0];
+  const today     = now.toISOString().split('T')[0];
   const yesterday = new Date(now - 86400000).toISOString().split('T')[0];
   const threeDaysAgo = new Date(now - 3 * 86400000).toISOString().split('T')[0];
-  const tomorrow = new Date(now + 86400000).toISOString().split('T')[0];
+  const tomorrow  = new Date(now + 86400000).toISOString().split('T')[0];
  
   try {
-    const [readinessRes, sleepRes, activityRes] = await Promise.all([
+    const [readinessRes, sleepRes, activityRes, dailySleepRes] = await Promise.all([
       fetch(`https://api.ouraring.com/v2/usercollection/daily_readiness?start_date=${threeDaysAgo}&end_date=${tomorrow}`, { headers }),
       fetch(`https://api.ouraring.com/v2/usercollection/sleep?start_date=${threeDaysAgo}&end_date=${tomorrow}`, { headers }),
       fetch(`https://api.ouraring.com/v2/usercollection/daily_activity?start_date=${threeDaysAgo}&end_date=${tomorrow}`, { headers }),
+      fetch(`https://api.ouraring.com/v2/usercollection/daily_sleep?start_date=${threeDaysAgo}&end_date=${tomorrow}`, { headers }),
     ]);
  
-    const [readinessData, sleepData, activityData] = await Promise.all([
-      readinessRes.json(),
-      sleepRes.json(),
-      activityRes.json(),
+    const [readinessData, sleepData, activityData, dailySleepData] = await Promise.all([
+      readinessRes.json(), sleepRes.json(), activityRes.json(), dailySleepRes.json(),
     ]);
  
+    // Most recent readiness
     const r = readinessData.data?.[readinessData.data.length - 1];
-    const sleepSessions = (sleepData.data || []).filter(s => s.type === 'long_sleep');
-    const s = sleepSessions[sleepSessions.length - 1];
-    const a = activityData.data?.[activityData.data.length - 1];
  
-    // HRV: avg from sleep session; max from 5-min HRV samples
-    let hrvAvg = '';
-    let hrvMax = '';
+    // Most recent long_sleep session
+    const sleepSessions = (sleepData.data || []).filter(x => x.type === 'long_sleep');
+    const s = sleepSessions[sleepSessions.length - 1];
+ 
+    // daily_sleep has the sleep score — match by day
+    const dailySleepEntries = dailySleepData.data || [];
+    const ds = s
+      ? (dailySleepEntries.find(d => d.day === s.day) || dailySleepEntries[dailySleepEntries.length - 1])
+      : dailySleepEntries[dailySleepEntries.length - 1];
+ 
+    // HRV avg + max from sleep session
+    let hrvAvg = '', hrvMax = '';
     if (s) {
       hrvAvg = s.average_hrv ? Math.round(s.average_hrv) : '';
       if (s.hrv && Array.isArray(s.hrv.items)) {
@@ -46,12 +52,12 @@ export async function onRequest(context) {
       }
     }
  
-    // RHR: try resting_heart_rate first, fall back to lowest_heart_rate
+    // RHR from readiness; min RHR from sleep
     const rhr    = r?.resting_heart_rate || s?.lowest_heart_rate || '';
     const rhrMin = s?.lowest_heart_rate ?? '';
  
-    // Sleep score: try score directly, also try contributors
-    const sleepScore = s?.score || s?.sleep_score || '';
+    // Sleep score from daily_sleep endpoint
+    const sleepScore = ds?.score || '';
  
     // Total sleep + awake
     function fmtSleep(sec) {
@@ -62,35 +68,40 @@ export async function onRequest(context) {
     const totalSleep = s?.total_sleep_duration ? fmtSleep(s.total_sleep_duration) : '';
     const awakeMin   = s?.awake_time ? Math.round(s.awake_time / 60) : '';
  
-    // Body temp: Oura returns deviation in CELSIUS — convert to Fahrenheit (×1.8, no +32 since it's a delta)
+    // Deep sleep
+    const deepSleep = s?.deep_sleep_duration ? fmtSleep(s.deep_sleep_duration) : '';
+ 
+    // Body temp: Oura returns °C deviation — convert to °F delta (×1.8)
     let bodyTemp = '';
-    if (r?.temperature_deviation !== undefined && r?.temperature_deviation !== null) {
+    if (r?.temperature_deviation != null) {
       const tempF = r.temperature_deviation * 1.8;
       bodyTemp = (tempF >= 0 ? '+' : '') + tempF.toFixed(1);
     }
  
-    // Steps: always use yesterday's completed activity (today resets to 0 in morning)
-    // Find yesterday's activity entry specifically
-    const yesterday = new Date(now - 86400000).toISOString().split('T')[0];
+    // Steps: use yesterday's completed count (today resets to 0 in morning)
     const yesterdayActivity = activityData.data?.find(a => a.day === yesterday);
-    const todayActivity = activityData.data?.find(a => a.day === today);
-    // Use yesterday's steps; fall back to most recent if yesterday not found
-    const steps = yesterdayActivity?.steps ?? todayActivity?.steps ?? a?.steps ?? '';
+    const todayActivity     = activityData.data?.find(a => a.day === today);
+    const steps = yesterdayActivity?.steps ?? todayActivity?.steps ?? '';
  
     const result = {
-      readiness_score:    r?.score ?? '',
-      sleep_score:        sleepScore,
-      average_hrv:        hrvAvg,
-      hrv_max:            hrvMax,
-      resting_heart_rate: rhr,
-      lowest_heart_rate:  rhrMin,
+      readiness_score:          r?.score ?? '',
+      sleep_score:              sleepScore,
+      average_hrv:              hrvAvg,
+      hrv_max:                  hrvMax,
+      resting_heart_rate:       rhr,
+      lowest_heart_rate:        rhrMin,
       total_sleep_duration_fmt: totalSleep,
-      awake_time_min:     awakeMin,
-      temperature_deviation_f: bodyTemp,
-      steps:              steps,
-      _date:              s?.day ?? r?.day ?? today,
-      _steps_date:        yesterdayActivity ? yesterday : (todayActivity ? today : 'unknown'),
-      _debug: { sleep_sessions: (sleepData.data||[]).map(s=>s.day+':'+s.type+':score='+s.score).join('|'), readiness_days: (readinessData.data||[]).map(r=>r.day+':'+r.score).join('|') },
+      deep_sleep_fmt:           deepSleep,
+      awake_time_min:           awakeMin,
+      temperature_deviation_f:  bodyTemp,
+      steps:                    steps,
+      _date:                    s?.day ?? r?.day ?? today,
+      _steps_date:              yesterdayActivity ? yesterday : (todayActivity ? today : 'unknown'),
+      _debug: {
+        daily_sleep_days: dailySleepEntries.map(d => d.day + ':' + d.score).join('|'),
+        readiness_days:   (readinessData.data||[]).map(r => r.day + ':' + r.score).join('|'),
+        sleep_session:    s?.day + ':' + s?.type,
+      },
     };
  
     return new Response(JSON.stringify(result), {
