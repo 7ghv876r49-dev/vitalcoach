@@ -65,10 +65,15 @@ export async function onRequest(context) {
       bodyTemp = (tempF >= 0 ? '+' : '') + tempF.toFixed(1);
     }
  
-    const steps = a?.steps ?? '';
+    // Steps: always use yesterday's completed activity (today resets to 0 in morning)
+    // Find yesterday's activity entry specifically
+    const yesterday = new Date(now - 86400000).toISOString().split('T')[0];
+    const yesterdayActivity = activityData.data?.find(a => a.day === yesterday);
+    const todayActivity = activityData.data?.find(a => a.day === today);
+    // Use yesterday's steps; fall back to most recent if yesterday not found
+    const steps = yesterdayActivity?.steps ?? todayActivity?.steps ?? a?.steps ?? '';
  
     const result = {
-      // Field names match what syncOuraPAT() reads in index.html
       readiness_score:    r?.score ?? '',
       sleep_score:        s?.score ?? '',
       average_hrv:        hrvAvg,
@@ -80,6 +85,7 @@ export async function onRequest(context) {
       temperature_deviation_f: bodyTemp,
       steps:              steps,
       _date:              s?.day ?? r?.day ?? today,
+      _steps_date:        yesterdayActivity ? yesterday : (todayActivity ? today : 'unknown'),
     };
  
     return new Response(JSON.stringify(result), {
@@ -92,3 +98,4 @@ export async function onRequest(context) {
     });
   }
 }
+ 
