@@ -5,18 +5,18 @@ export async function onRequest(context) {
       status: 500, headers: { 'Content-Type': 'application/json' }
     });
   }
- 
+
   const headers = {
     'Authorization': `Bearer ${PAT}`,
     'Content-Type': 'application/json'
   };
- 
+
   const now = new Date();
   const today     = now.toISOString().split('T')[0];
   const yesterday = new Date(now - 86400000).toISOString().split('T')[0];
   const threeDaysAgo = new Date(now - 3 * 86400000).toISOString().split('T')[0];
   const tomorrow  = new Date(now + 86400000).toISOString().split('T')[0];
- 
+
   try {
     const [readinessRes, sleepRes, activityRes, dailySleepRes] = await Promise.all([
       fetch(`https://api.ouraring.com/v2/usercollection/daily_readiness?start_date=${threeDaysAgo}&end_date=${tomorrow}`, { headers }),
@@ -24,24 +24,25 @@ export async function onRequest(context) {
       fetch(`https://api.ouraring.com/v2/usercollection/daily_activity?start_date=${threeDaysAgo}&end_date=${tomorrow}`, { headers }),
       fetch(`https://api.ouraring.com/v2/usercollection/daily_sleep?start_date=${threeDaysAgo}&end_date=${tomorrow}`, { headers }),
     ]);
- 
+
     const [readinessData, sleepData, activityData, dailySleepData] = await Promise.all([
       readinessRes.json(), sleepRes.json(), activityRes.json(), dailySleepRes.json(),
     ]);
- 
+
     // Most recent readiness
     const r = readinessData.data?.[readinessData.data.length - 1];
- 
-    // Most recent long_sleep session
-    const sleepSessions = (sleepData.data || []).filter(x => x.type === 'long_sleep');
-    const s = sleepSessions[sleepSessions.length - 1];
- 
-    // daily_sleep has the sleep score — match by day
+
+    // daily_sleep has the sleep score — use most recent entry
     const dailySleepEntries = dailySleepData.data || [];
-    const ds = s
-      ? (dailySleepEntries.find(d => d.day === s.day) || dailySleepEntries[dailySleepEntries.length - 1])
-      : dailySleepEntries[dailySleepEntries.length - 1];
- 
+    const ds = dailySleepEntries[dailySleepEntries.length - 1];
+
+    // Match sleep session to daily_sleep date (most recent)
+    const targetDate = ds?.day;
+    const sleepSessions = (sleepData.data || []).filter(x => x.type === 'long_sleep');
+    const s = targetDate
+      ? (sleepSessions.find(x => x.day === targetDate) || sleepSessions[sleepSessions.length - 1])
+      : sleepSessions[sleepSessions.length - 1];
+
     // HRV avg + max from sleep session
     let hrvAvg = '', hrvMax = '';
     if (s) {
@@ -51,14 +52,14 @@ export async function onRequest(context) {
         if (valid.length > 0) hrvMax = Math.round(Math.max(...valid));
       }
     }
- 
+
     // RHR from readiness; min RHR from sleep
     const rhr    = r?.resting_heart_rate || s?.lowest_heart_rate || '';
     const rhrMin = s?.lowest_heart_rate ?? '';
- 
+
     // Sleep score from daily_sleep endpoint
     const sleepScore = ds?.score || '';
- 
+
     // Total sleep + awake
     function fmtSleep(sec) {
       if (!sec) return '';
@@ -67,22 +68,22 @@ export async function onRequest(context) {
     }
     const totalSleep = s?.total_sleep_duration ? fmtSleep(s.total_sleep_duration) : '';
     const awakeMin   = s?.awake_time ? Math.round(s.awake_time / 60) : '';
- 
+
     // Deep sleep
     const deepSleep = s?.deep_sleep_duration ? fmtSleep(s.deep_sleep_duration) : '';
- 
+
     // Body temp: Oura returns °C deviation — convert to °F delta (×1.8)
     let bodyTemp = '';
     if (r?.temperature_deviation != null) {
       const tempF = r.temperature_deviation * 1.8;
       bodyTemp = (tempF >= 0 ? '+' : '') + tempF.toFixed(1);
     }
- 
+
     // Steps: use yesterday's completed count (today resets to 0 in morning)
     const yesterdayActivity = activityData.data?.find(a => a.day === yesterday);
     const todayActivity     = activityData.data?.find(a => a.day === today);
     const steps = yesterdayActivity?.steps ?? todayActivity?.steps ?? '';
- 
+
     const result = {
       readiness_score:          r?.score ?? '',
       sleep_score:              sleepScore,
@@ -103,11 +104,11 @@ export async function onRequest(context) {
         sleep_session:    s?.day + ':' + s?.type,
       },
     };
- 
+
     return new Response(JSON.stringify(result), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
- 
+
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500, headers: { 'Content-Type': 'application/json' }
