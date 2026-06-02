@@ -13,13 +13,15 @@ export async function onRequest(context) {
  
   const now = new Date();
   const today = now.toISOString().split('T')[0];
-  const twoDaysAgo = new Date(now - 2 * 86400000).toISOString().split('T')[0];
+  const yesterday = new Date(now - 86400000).toISOString().split('T')[0];
+  const threeDaysAgo = new Date(now - 3 * 86400000).toISOString().split('T')[0];
+  const tomorrow = new Date(now + 86400000).toISOString().split('T')[0];
  
   try {
     const [readinessRes, sleepRes, activityRes] = await Promise.all([
-      fetch(`https://api.ouraring.com/v2/usercollection/daily_readiness?start_date=${twoDaysAgo}&end_date=${today}`, { headers }),
-      fetch(`https://api.ouraring.com/v2/usercollection/sleep?start_date=${twoDaysAgo}&end_date=${today}`, { headers }),
-      fetch(`https://api.ouraring.com/v2/usercollection/daily_activity?start_date=${twoDaysAgo}&end_date=${today}`, { headers }),
+      fetch(`https://api.ouraring.com/v2/usercollection/daily_readiness?start_date=${threeDaysAgo}&end_date=${tomorrow}`, { headers }),
+      fetch(`https://api.ouraring.com/v2/usercollection/sleep?start_date=${threeDaysAgo}&end_date=${tomorrow}`, { headers }),
+      fetch(`https://api.ouraring.com/v2/usercollection/daily_activity?start_date=${threeDaysAgo}&end_date=${tomorrow}`, { headers }),
     ]);
  
     const [readinessData, sleepData, activityData] = await Promise.all([
@@ -88,7 +90,7 @@ export async function onRequest(context) {
       steps:              steps,
       _date:              s?.day ?? r?.day ?? today,
       _steps_date:        yesterdayActivity ? yesterday : (todayActivity ? today : 'unknown'),
-      _debug:             { sleep_type: s?.type, sleep_day: s?.day, sleep_score_raw: s?.score, rhr_raw: r?.resting_heart_rate },
+      _debug: { sleep_sessions: (sleepData.data||[]).map(s=>s.day+':'+s.type+':score='+s.score).join('|'), readiness_days: (readinessData.data||[]).map(r=>r.day+':'+r.score).join('|') },
     };
  
     return new Response(JSON.stringify(result), {
@@ -101,4 +103,3 @@ export async function onRequest(context) {
     });
   }
 }
-  
