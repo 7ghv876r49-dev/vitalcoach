@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Vital Coach — KV Seed</title>
+<style>
+body { font-family: sans-serif; padding: 40px; background: #1a1a1a; color: #eee; }
+button { padding: 16px 32px; background: #1A9E72; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+#status { margin-top: 20px; padding: 16px; border-radius: 8px; font-size: 14px; display: none; }
+.ok { background: #1a3a2a; color: #1A9E72; }
+.err { background: #3a1a1a; color: #E05555; }
+</style>
+</head>
+<body>
+<h2>Vital Coach — Full KV Restore</h2>
+<p>This will completely replace the tracker KV with the clean baseline. Run once, then delete from GitHub.</p>
+<button onclick="seed()">Write to KV</button>
+<div id="status"></div>
+<script>
+const DATA = `=== Session History ===
+\uD83D\uDCCB  SESSION HISTORY
+Upload this file + Oura screenshots \u2192 Claude programs your session + updates after
+Claude maintains this log \u00B7 Upload latest file at start of each session \u00B7 Weights in Weight Library tab
+DATE\tLOCATION\tSESSION\nTYPE\tREADINESS\n(Oura)\tHRV\n(ms)\tCONTRAST\nTHERAPY\tEXERCISES \u2014 SETS \u00D7 REPS\tAW ACTIVE\nCALORIES\tAW AVG\nHR\tAW PEAK\nHR\tTOTAL\nTIME\tZ1\nTIME\tZ2-3\nTIME\tZ4-5\nTIME
+2025-05-13\tHouston Condo\tFull Body \u2014 Calibration\t90\t20\t\u2705\tDB Bench Press 3\u00D710\nLat Pulldown 3\u00D710\nDB Shoulder Press 3\u00D710\nGoblet Squat 3\u00D712\nLeg Extension 3\u00D712\nDB Bicep Curl 3\u00D712\nTricep Extension 3\u00D712\nPlank 3 sets (45s/45s/30s)\nWalk ~0.5mi cooldown\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-14\tHouston Condo\tStrength \u2014 Legs + Core\t85\t18\t\u2705\tGoblet Squat 4\u00D712\nDB Step-Up 3\u00D710 each leg\nDB RDL 3\u00D712\nProne Leg Curl 2\u00D710@set7 + 1\u00D710@set6\nLeg Extension 3\u00D712\nCalf Raise 1\u00D715 + 2\u00D725\nDecline Sit-Up 1\u00D712 + 2\u00D715\nPlank 45s/45s/35s\t306\t114\t157\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-16\tSpring House\tHIIT \u2014 Apple Fitness+\t81\t16\t\u2705\tApple Fitness+ HIIT with Brian (20 min) \u00B7 Hip-Hop/R&B\nSquat Jumps, Striders, Skaters, Air Jacks, Core\nHR Zones: Z1 4:08 \u00B7 Z2 2:54 \u00B7 Z3 4:23 \u00B7 Z4 6:55 \u00B7 Z5 1:57\t166\t144\t168\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-16\tSpring House\tStrength \u2014 Apple Fitness+\t81\t16\t\u2705\tApple Fitness+ Strength with Jenn (20 min) \u00B7 Everything Rock\nOverhead Press, Bent Over Rows, Reverse Flys, Front Raises\nHR Zones: Z1 7:18 \u00B7 Z2 11:12 \u00B7 Z3 2:19\t125\t133\t150\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-17\tSpring House\tActive Recovery \u2014 Yoga\t91\t22\t\u274C\tApple Fitness+ Yoga with Dice (10 min) \u00B7 Hip-Hop/R&B\nFeat. Wellness Creator Remy Morimoto Park\nGentle mobility + stretching\t36\t92\t119\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-18\tSpring House\tActive Recovery \u2014 Walk\t88\t17\t\u274C\tOutdoor Walk \u2014 1.22 mi, 26 min\nSpring neighborhood\nElevation gain 94ft\t99\t88\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-18\tSpring House\tActive Recovery \u2014 Yoga\t88\t17\t\u274C\tApple Fitness+ Yoga with Jessica (10 min) \u00B7 Chill Vibes\nMorning session \u2014 mobility + stretching\t24\t79\t88\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-18\tSpring House\tActive Recovery \u2014 Yoga\t88\t17\t\u274C\tApple Fitness+ Yoga with Jessica (10 min) \u00B7 Chill Vibes\nEvening wind-down session 9:11-9:21pm\t34\t90\t111\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-20\tSpring House\tStrength \u2014 Full Body\t87\t24\t\u2705\tTotal Gym Chest Press \u2014 Level 6 \u00D7 3\u00D725\nDB Row \u2014 20lb \u00D7 15/20/20\nDB Goblet Squat \u2014 25lb \u00D7 3\u00D715 (pause at bottom)\nTotal Gym Row \u2014 Level 6 \u00D7 3\u00D725\nDB Shoulder Press \u2014 25lb \u00D7 3\u00D710\nForward Lunges \u2014 20lb \u00D7 2\u00D715 each leg\nStability Ball: Plank 2\u00D730s + Crunches 2\u00D720 + Ball Pass 2\u00D710\t217\t97\t142\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-20\tSpring House\tActive Recovery \u2014 Walk\t87\t24\t\u274C\tOutdoor Walk \u2014 1.59 mi, 39 min\nSpring neighborhood, flat terrain\t124\t92\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-20\tSpring House\tActive Recovery \u2014 Yoga\t87\t24\t\u274C\tApple Fitness+ Yoga with Jessica (10 min) \u00B7 Chill Vibes\nEvening wind-down 9:54-10:05pm\t25\t81\t94\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-25\tHouston Condo\tStrength \u2014 Full Body Circuit\t91\t17\t\u2705\tCIRCUIT \u2014 3 rounds, 30s rest between exercises, 90s between rounds:\nGoblet Squat 35lb\u00D715 \u00B7 DB Bench 40lb\u00D712 \u00B7 DB Step-Up 20lb\u00D710ea\nDB Row 20lb\u00D712ea \u00B7 DB Shoulder Press 25lb\u00D712 \u00B7 DB RDL 35lb\u00D712\nBicep Curl 25lb\u00D710 superset Tricep Ext Setting 5\u00D710\nFINISHER: Decline Sit-Up 3\u00D715 \u00B7 Plank 2\u00D745s \u00B7 Calf Raise 25lb\u00D72\u00D725\t340\t132\t164\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-27\tSpring House\tActive Recovery \u2014 Walk\t91\t24\t\u2705\tOutdoor Walk \u2014 2.30 mi, 55:27\nSpring neighborhood \u00B7 Elevation gain 31ft \u00B7 Pace 24'02"/mi\t185\t83\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014
+2026-05-28\tSpring Clubhouse\tStrength \u2014 Legs + Core (Clubhouse)\t91\t24\t\u274C\tPUSH: DB Bench 40lb\u00D73\u00D712 \u00B7 DB Shoulder Press 30lb\u00D73\u00D710 (bumped from 25lb) | PULL: DB Row 30lb\u00D73\u00D712ea (bumped from 20lb) \u00B7 DB Bicep Curl 30lb\u00D73\u00D710 (bumped from 25lb) | LEGS: Goblet Squat 35lb\u00D73\u00D715 \u00B7 DB RDL 40lb\u00D73\u00D712 \u00B7 Step-Up w/ Knee Drive 25lb\u00D73\u00D710ea | FINISHER 2\u00D7: Fwd Lunge 20lb\u00D715ea \u00B7 OH Tricep Press 20lb\u00D712 \u00B7 Plank 2\u00D745s \u00B7 Calf Raise 25lb\u00D725\t374\t122\t161\t\u2014\t\u2014\t\u2014\t\u2014\tIntercostal strain post-session from bracing \u2014 confirmed muscular. All weight bumps confirmed. Step-up w/ knee drive = new standard.
+2026-05-31\tSpring House\tStrength \u2014 Upper Body + Core\t86\t23\t\u274C\tDB Bench Press \u2014 3\u00D715 @ 25lb (calibration Spring House bench)\nDB Shoulder Press (seated) \u2014 2\u00D715 + 1\u00D712 @ 25lb\nTG Row \u2014 3\u00D725 @ Level 6\nTG Pullover \u2014 3\u00D725 @ Level 6 (NEW \u2014 calibration)\nDB Bicep Curl \u2014 3\u00D715 @ 20lb\nStability Ball Crunch \u2014 3\u00D725 @ BW\nBall Pass \u2014 3\u00D710 @ BW\nStability Ball Plank \u2014 2\u00D730s @ BW\nSwim \u2014 5 min aerobic Zone 1-2 cooldown\t167\t102\t137\t34:14\t34:09\t0:00\t0:00
+2026-06-01\tSpring House\tCardio \u2014 Outdoor Run\t\t\t\t\u274C\t1.20 mi @ 8'14"/mi pace \u00B7 effort 7/10\t129\t161\t178\t9:56\t0:44\t0:56\t8:12\tStrong Z4-5 output \u2014 82% of run in Z4-5. Peak HR 178 new high.
+2026-06-02\tSpring House\tCardio \u2014 Outdoor Run\t85\t20\t\u274C\t1.20 mi @ 7'41"/mi pace \u00B7 effort 7/10 Hard\t128\t164\t179\t9:14\t0:40\t0:43\t7:49\tAvg HR 164 \u00B7 5:40 in Z5 \u00B7 Two consecutive high-intensity runs 6/1+6/2 \u2014 prioritize recovery tomorrow
+
+=== Oura Daily Log ===
+\uD83D\uDD35  OURA DAILY LOG
+3 screenshots each morning: Dashboard + Sleep Detail + Sleep Chart
+\tREADINESS\tHRV AVG\n(ms)\tSLEEP\nSCORE\tDEEP\nSLEEP (h)\tREM\n(h)\tTOTAL\nSLEEP (h)\tRHR\n(bpm)\tBODY TEMP\nDEV (\u00B0F)\tRESP RATE\n(/min)\tMAX HRV\n(ms)\tMIN RHR\n(bpm)\tNOTES / CONTEXT
+\t\t\t\t\t\t\t\t\t\t\t\u2014
+\t90\t20\t87\t1.53\t1.23\t8.38\t55\t+0.1\t13.6\t\u2014\t\u2014\tFirst training day. Full body calibration + contrast therapy.
+\t85\t18\t79\t0.9\t1.6\t8.27\t55\t+0.3\t13.1\t\u2014\t\u2014\tLegs+core session + contrast therapy. Sleep latency 1hr. Deep sleep low 11%. Slightly elevated temp.
+\t81\t16\t87\t1.52\t1.62\t10.05\t56\t+0.8\t13.5\t\u2014\t\u2014\tHIIT+Strength Apple Fitness+ at Spring. Great sleep rebound 10h3m. Body temp +0.8\u00B0F elevated \u2014 resolved next day. HRV dipped to 16ms.
+\t91\t22\t91\t1.38\t1.9\t7.9\t55\t-0.1\t13.2\t\u2014\t\u2014\tBest scores so far \u2014 both 91! Bed 10:17pm. Wake 7:08am. REM excellent 24%. Body temp neutral. Sleep debt none. Yoga active recovery.
+\t93\t28\t88\t1.1\t1.82\t8.68\t53\t+0.1\t13\t53\t\u2014\tNEW BEST readiness 93 + HRV 28ms! Max HRV 53ms peak. Bed 9:10pm. Wake 7:11am. Awake 1h20m restless but still excellent scores. RHR ticking down to 53. First full wind-down routine night.
+\t88\t17\t91\t1.18\t1.98\t8.57\t57\t-0.2\t12.8\t37\t\u2014\tReadiness 88 + Sleep 91 \u2014 both excellent. HRV dipped to 17ms after 93 peak \u2014 normal recovery response. Max HRV 37ms. Bedtime 9:46pm. Wake 7:17am. SpO2 96%. Sleep efficiency 90% \u2014 best yet.
+\t87\t24\t90\t1.05\t1.57\t7.63\t52\t+0.2\t13.2\t55\t\u2014\tRHR new low 52 bpm \u2B07\uFE0F trending down all week! Max HRV 55ms new peak. Awake 1h23m \u2014 3rd consecutive night with elevated wake time. Bedtime 10:55pm. Wake 7:56am. SpO2 97%. Sleep debt none.
+\t89\t26\t80\t1.07\t1.52\t6.75\t52\t-0.3\t12.5\t71\t\u2014\tMAX HRV 71ms \u2014 new all-time peak! \uD83C\uDFC6 Despite fragmented sleep. Awake 1h43m worst yet \u2014 dogs still in room. AC helped (body temp -0.3\u00B0F). Bedtime 10:27pm \u2705. RHR holding at 52. SpO2 97%. Sleep debt none. JI sleep aid night 1.
+\t82\t28\t71\t0.67\t0.97\t5.47\t52\t-0.7\t12.2\t59\t\u2014\t\u26A0\uFE0F OURA MISSED FIRST 2HRS \u2014 ring off until 12am. True total sleep ~7h33m per Apple Watch (score 93). Fell asleep 9:55pm \u2014 earliest yet! Body clock ALIGNED \u2705 first time. Awake only 45m \u2014 BEST in days. NO DOGS = massive improvement. Body temp -0.7\u00B0F coldest yet. Max HRV 59ms. SpO2 99%.
+\t93\t27\t90\t1.1\t1.78\t8.68\t52\t+0.3\t12.9\t65\t\u2014\tReadiness 93 'Bring it on!' Dogs NOT in room \u2014 but 2h16m awake. 4am natural wake \u2014 front-loaded deep sleeper confirmed. Max HRV 65ms. RHR holding 52. Bedtime 10:19pm \u2705. Body temp +0.3\u00B0F slightly up.
+\t85\t22\t83\t1.22\t1.45\t6.45\t57\t\u2014\t\u2014\t76\t\u2014\tBedtime 11:46pm \u2014 late. Short sleep 6h27m. Deep sleep 1h13m (19%) \u2014 best % in weeks! Max HRV 76ms \u2014 NEW ALL-TIME PEAK despite late night. Weekend low stress (1/5) likely key factor. RHR jumped to 57 from 52.
+\t91\t17\t91\t\u2014\t\u2014\t8.15\t55\t\u2014\t\u2014\t\u2014\t\u2014\tReadiness 91 + Sleep 91 both excellent. BUT HRV only 17ms \u2014 dogs back in room! Dog correlation confirmed again: no dogs = 59-76ms HRV, dogs = 17-34ms. Apple Watch: 8h19m, score 87, deep 57min, awake 47min. Bedtime ~10:44pm \u2705.
+\t82\t18\t85\t0.63\t1.58\t7.22\t56\t\u2014\t\u2014\t\u2014\t\u2014\tDogs out but BARKED early in sleep \u2014 HRV tanked to 18ms same as dogs-in nights. KEY FINDING: acoustic disruption = same HRV impact as physical presence. Apple Watch: 92 score, 7h20m, deep 50min. Bedtime 10:08pm \u2705. 1 unit alcohol noted.
+\t90\t21\t86\t0.65\t1.68\t7.07\t55\t\t\t48\t\u2014\tReadiness 90 \u2014 bounce-back from 82 post-circuit. HRV 21ms (max 48ms). RHR 55. Sleep 86. Oura: 7h4m, 4 wake-ups, 25min awake. Bedtime ~10:52pm. Dogs out, no barking. JI taken. Stress 4/5 day \u2014 likely suppressing HRV. Blue blockers + screens missed.
+\t91\t24\t87\t1.62\t1.73\t7.22\t55\t0\t13.1\t47\t\u2014\tReadiness 91 \u00B7 Sleep 87 \u00B7 HRV 24ms (max 47ms) \u00B7 RHR 55 \u00B7 Deep 1h37m \u00B7 REM 1h44m \u00B7 Awake 32m \u00B7 Sleep start 10:08pm \u00B7 Body temp +/-0 \u00B7 Resp 13.1 \u00B7 Efficiency 93%. Dogs out + quiet = best awake time recently. HRV suppressed by stress 4/5 + screens + no blue blockers 5/27.
+\t85\t24\t83\t1.03\t1.38\t6.77\t56\t\t\t79\t\u2014\tReadiness 85 \u00B7 Sleep 83 \u00B7 HRV 24ms avg \u00B7 MAX HRV 79ms \u2014 NEW ALL-TIME PEAK \uD83C\uDFC6 \u00B7 RHR 56 \u00B7 Deep 1h2m (15%) \u00B7 REM 1h23m (21%) \u00B7 Awake 38m \u00B7 Efficiency 91% \u00B7 Body clock ALIGNED \u2705 \u00B7 Bedtime ~10:53pm \u00B7 Wake ~6:16am.
+\t70\t20\t60\t0.9\t0.62\t4.73\t61\t-0.2\t12.5\t\u2014\t\u2014\tReadiness 70 \u00B7 Sleep 60 (Low) \u00B7 HRV 20ms \u00B7 RHR 61 \u00B7 Total 4h44m \u00B7 Bedtime ~3:23am (very late \u2014 stayed up working on Claude) \u00B7 Body temp -0.2\u00B0F \u00B7 Sleep debt 3h30m MODERATE \u00B7 3 screwdrivers + zero wind-down + extremely late bed.
+\t86\t23\t85\t1.13\t1.88\t6.65\t53\t-0.2\t12.8\t69\t\u2014\tReadiness 86 \u00B7 Sleep 85 \u00B7 HRV 23ms avg \u00B7 Max 69ms \u00B7 RHR 53 \u00B7 Deep 1h8m (17%) \u00B7 REM 1h53m (28%) \u00B7 Awake 45m \u00B7 Efficiency 90% \u00B7 Sleep debt 4h10m MODERATE \u00B7 Strong bounce-back from 5/30. Dogs out \u2705 + JI \u2705 = recovery working. Late bedtime ~11:40pm hurt duration.
+\t82\t23\t76\t1.45\t1.47\t5.78\t55\t-0.6\t13\t53\t55\tReadiness 82 \u00B7 Sleep 76 \u00B7 HRV 23ms avg \u00B7 Max 53ms \u00B7 RHR 55 \u00B7 Min RHR 55 \u00B7 Body Temp -0.6\u00B0F \u00B7 Resp 13.0/min \u00B7 AW: 5h47m total, 1h35m awake (6 wake-ups), REM 1h28m, Core 2h52m, Deep 1h27m.
+2026-06-02\t85\t20\t87\t0.77\t\t7.90\t57\t-0.1\t\t61\t57\tReadiness 85 \u00B7 Sleep 87 \u00B7 HRV 20ms avg \u00B7 Max 61ms \u00B7 RHR 57 \u00B7 Min RHR 57 \u00B7 Deep 0h46m \u00B7 Total 7h54m \u00B7 Body temp -0.1\u00B0F \u00B7 Two consecutive Z4-5 runs 6/1+6/2
+2026-06-03\t80\t21\t72\t1.03\t\u2014\t6.2\t56\t0.0\t\u2014\t52\t56\tReadiness 80 \u00B7 Sleep 72 \u00B7 HRV 21ms avg \u00B7 Max 52ms \u00B7 RHR 56 \u00B7 Min RHR 56 \u00B7 Total sleep 6h12m \u00B7 Awake 79min \u00B7 Body temp +0.0\u00B0F \u00B7 Two consecutive hard runs 6/1+6/2 \u00B7 Partial wind-down: stretch \u2705 dogs out \u2705 bed by 10 \u2705 mag \u2705
+
+=== Weight Library ===
+\u2696\uFE0F  WEIGHT LIBRARY
+Calibrated working weights per exercise per location \u00B7 Updated by Claude after each session
+Calibration on first attempt \u00B7 Machine settings noted separately \u00B7 Progressive overload tracked here
+EXERCISE\tLOCATION\tEQUIPMENT\tCURRENT\nWORKING WT\tLAST SESSION\nWT / SETTING\tDATE LAST\nUPDATED\tNOTES / PROGRESSION
+DB Bench Press\tHouston Condo\tDumbbells + bench\t40 lb\t40 lb\t2025-05-13\tHold \u2014 build consistency before increasing.
+Lat Pulldown\tHouston Condo\tCombo machine\tSetting 10\tSetting 10\t2025-05-13\tStay at setting 10 several sessions before increasing.
+DB Shoulder Press\tHouston Condo\tDumbbells\t30 lb\t30 lb \u00D7 3\u00D710\t2026-05-28\tBumped from 25lb \u2014 hard but doable 5/28. Hold at 30lb and build consistency.
+Goblet Squat\tHouston Condo\tSingle dumbbell\t35 lb\t35 lb\t2025-05-14\tGood calibration. Build before increasing.
+DB Step-Up\tHouston Condo\tDumbbells + bench\t25 lb\t25 lb \u00D7 3\u00D710 each\t2026-05-28\tNEW STANDARD: active leg stays on bench, drive knee up at top. Program as Step-Up w/ Knee Drive going forward.
+DB RDL\tHouston Condo\tDumbbells\t40 lb\t40 lb \u00D7 3\u00D712\t2026-05-28\tConfirmed bump to 40lb 5/28. Some lower back fatigue \u2014 muscular, not injury. Hold here.
+Prone Leg Curl\tHouston Condo\tCombo machine\tSetting 6\tSet7/7/6\t2025-05-14\tStart at setting 6 next leg day. Build slowly.
+Leg Extension\tHouston Condo\tCombo machine\tSetting 8\tSetting 8\t2025-05-14\tHold here.
+Calf Raise\tAll\tStep + dumbbells\t25 lb\t15/25/25\t2025-05-14\t3\u00D725 going forward. Use step for full range.
+DB Bicep Curl\tHouston Condo\tDumbbells\t30 lb\t30 lb \u00D7 3\u00D710\t2026-05-28\tBumped from 25lb 5/28. Hold and build to 3\u00D712 before increasing.
+Tricep Extension\tHouston Condo\tCombo machine\tSetting 5\tSetting 6\t2025-05-13\tTry setting 5 next or keep 6 at 3\u00D710.
+Decline Sit-Up\tHouston Condo\tDecline bench\tBodyweight\t12/15/15\t2025-05-14\t3\u00D715 going forward. Build to weighted.
+Plank\tAll\tBodyweight\tBodyweight\t45s/45s/35s\t2025-05-14\tBuild to 3\u00D760s.
+Seated Cable Row\tHouston Condo\tCombo machine\t\u2014\t\u2014\t\u2014\tNot yet calibrated
+Machine Chest Press\tHouston Condo\tCombo machine\t\u2014\t\u2014\t\u2014\tNot yet calibrated
+DB Row\tHouston Condo\tDumbbells\t30 lb\t30 lb \u00D7 3\u00D712 each\t2026-05-28\tBumped from 20lb \u2014 big jump. Confirms strength gain. Hold at 30lb.
+Barbell Back Squat\tSpring Clubhouse\tBarbell + rack\t\u2014\t\u2014\t\u2014\tNot yet calibrated
+Barbell Deadlift\tSpring Clubhouse\tBarbell\t\u2014\t\u2014\t\u2014\tNot yet calibrated
+Barbell RDL\tSpring Clubhouse\tBarbell\t\u2014\t\u2014\t\u2014\tNot yet calibrated
+Barbell Row\tSpring Clubhouse\tBarbell\t\u2014\t\u2014\t\u2014\tNot yet calibrated
+Barbell Overhead Press\tSpring Clubhouse\tBarbell + rack\t\u2014\t\u2014\t\u2014\tNot yet calibrated
+Treadmill\tSpring Clubhouse\tTreadmill\t\u2014\t\u2014\t\u2014\tLog speed/incline/duration
+Elliptical\tSpring Clubhouse\tElliptical\t\u2014\t\u2014\t\u2014\tLog resistance/duration
+Gym \u2014 self directed\tGuanajuato\tLocal gym\t\u2014\t\u2014\t\u2014\tLog after first session
+Total Gym Chest Press\tSpring House\tTotal Gym Apex 65\tLevel 6\tLevel 6 \u00D7 3\u00D725\t2025-05-20\tBuild reps to 3\u00D730 before increasing level.
+Total Gym Row/Pull\tSpring House\tTotal Gym Apex 65\tLevel 6\tLevel 6 \u00D7 3\u00D725\t2025-05-20\tBuild reps to 3\u00D730 before increasing level.
+Total Gym Crunches\tSpring House\tTotal Gym Apex 65\tLevel 6\t\u2014\t\u2014\tNot yet calibrated \u2014 add to core rotation next session.
+DB Row\tSpring House\tDumbbells\t20 lb\t15/20/20\t2025-05-20\tCalibration. 3\u00D720 next session.
+DB Goblet Squat\tSpring House\tDumbbells\t25 lb\t3\u00D715\t2025-05-20\tSame as Houston. Strong \u2014 try pause squat variation next.
+DB Shoulder Press\tSpring House\tDumbbells\t25 lb\t3\u00D710\t2025-05-20\tSame as Houston. Consistent.
+Forward Lunge\tSpring House\tDumbbells\t20 lb\t2\u00D715 each\t2025-05-20\tCalibration. Good. Build to 3\u00D715.
+Stability Ball Crunch\tSpring House\tStability Ball\tBW\t2\u00D720\t2025-05-20\tBuild to 3\u00D725.
+Ball Pass\tSpring House\tStability Ball\tBW\t2\u00D710\t2025-05-20\tGreat core move \u2014 keep in rotation. Build to 3\u00D715.
+Stability Ball Plank\tSpring House\tStability Ball\tBW\t2\u00D730s\t2025-05-20\tHarder than floor plank. Build to 2\u00D760s.
+DB Bench Press\tSpring Clubhouse\tDumbbells + bench\t40 lb\t40 lb \u00D7 3\u00D712\t2026-05-28\tHold \u2014 same as Houston. Build consistency.
+DB Shoulder Press\tSpring Clubhouse\tDumbbells\t30 lb\t30 lb \u00D7 3\u00D710\t2026-05-28\tBumped from 25lb. Hard but doable. Hold and build.
+DB Row\tSpring Clubhouse\tDumbbells\t30 lb\t30 lb \u00D7 3\u00D712 each\t2026-05-28\tBumped from 20lb \u2014 big jump confirmed. Hold at 30lb.
+DB Bicep Curl\tSpring Clubhouse\tDumbbells\t30 lb\t30 lb \u00D7 3\u00D710\t2026-05-28\tBumped from 25lb. Hold and build to 3\u00D712.
+DB Goblet Squat\tSpring Clubhouse\tDumbbells\t35 lb\t35 lb \u00D7 3\u00D715\t2026-05-28\tPause at bottom. Some lower back fatigue \u2014 muscular. Hold.
+DB RDL\tSpring Clubhouse\tDumbbells\t40 lb\t40 lb \u00D7 3\u00D712\t2026-05-28\tConfirmed bump from 35lb. Some back fatigue \u2014 hold here.
+DB Step-Up w/ Knee Drive\tSpring Clubhouse\tDumbbells + bench\t25 lb\t25 lb \u00D7 3\u00D710 each\t2026-05-28\tNEW STANDARD: active leg stays on bench, knee drive at top. Replace standard step-up.
+Forward Lunge\tSpring Clubhouse\tDumbbells\t20 lb\t20 lb \u00D7 15 each (finisher)\t2026-05-28\tVery hard at end of leg block. Next session: reduce to 10 each or move earlier.
+Tricep Pushdown\tSpring Clubhouse\tCable machine\t\u2014\tCalibrate next session\t2026-05-28\tReplacing overhead tricep press at Clubhouse. Calibrate next session.
+Plank\tSpring Clubhouse\tBodyweight\tBW\t2\u00D745s\t2026-05-28\tBuilding to 3\u00D760s.
+Calf Raise\tSpring Clubhouse\tDumbbells + step\t25 lb\t25 lb \u00D7 25\t2026-05-28\tSingle set in finisher. Build.
+DB Bench Press\tSpring House\tDumbbells + adjustable bench\t25 lb\t25 lb x 3x15\t2026-05-31\tNEW bench added. Calibration. 3x15 easy \u2014 bump to 30lb when available.
+TG Pullover\tSpring House\tTotal Gym Apex 65\tLevel 6\tLevel 6 x 3x25\t2026-05-31\tNEW. Straight-arm pullover on back. Hits lats, chest, triceps, core. Heavy rotation going forward.
+TG Tricep Extension\tSpring House\tTotal Gym Apex 65\tLevel 6\t\u2014 (calibrate next)\t2026-05-31\tNEW \u2014 added to library. Calibrate next Spring House session.
+TG Bicep Curl\tSpring House\tTotal Gym Apex 65\tLevel 6\t\u2014 (calibrate next)\t2026-05-31\tNEW \u2014 added to library. Calibrate next Spring House session.
+TG Chest Fly\tSpring House\tTotal Gym Apex 65\tLevel 6\t\u2014 (calibrate next)\t2026-05-31\tNEW \u2014 added to library. Calibrate next Spring House session.
+TG Crunch / Sit-Up\tSpring House\tTotal Gym Apex 65\tLevel 6\t\u2014 (calibrate next)\t2026-05-31\tNEW \u2014 added to library. Calibrate next Spring House session.
+
+=== Daily Habits ===
+\uD83C\uDF3F  DAILY HABITS & WIND-DOWN
+Goals: \u2191 HRV \u00B7 \u2193 Resting HR \u00B7 Better sleep \u00B7 Nervous system optimization
+TARGETS: RHR \u2192 48-52 bpm  |  HRV \u2192 35-50 ms  |  Bed 10pm  |  Steps 10k+  |  Alcohol: minimize
+DATE\t\u2500\u2500 DAILY HABITS \u2500\u2500\t\t\t\t\t\t\t\t\u2500\u2500 WIND-DOWN & SLEEP \u2500\u2500
+DATE\tCONTRAST\nTHERAPY\tMORNING\nSUNLIGHT\tSTRETCHING\n(anytime)\tHYDRATION\n(2L+)\tORGASM\tSTEPS\n(actual)\tSTRESS\nLEVEL [0-5]\tCOFFEE\n(cups)\tALCOHOL\n(units)\tNO FOOD\nAFTER 6:30PM\tBLUE\nBLOCKERS\tNO SCREENS\nAFTER 9:30PM\tEVENING\nBREATHWORK\tEVENING\nSTRETCHING\tIN BED BY\n10PM\tMAGNESIUM\nTAKEN\tDOGS IN\nROOM
+2025-05-13\t\u2705\t\u274C\t\u274C\t\u274C\t\u2014\t3,313\t\u2014\t\u2014\t0\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-14\t\u2705\t\u274C\t\u274C\t\u274C\t\u2014\t\u2014\t\u2014\t\u2014\t0\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-15\t\u274C\t\u274C\t\u274C\t\u274C\t\u2014\t\u2014\t\u2014\t\u2014\t0\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014\t\u2014
+2025-05-16\t\u2705\t\u274C\t\u274C\t\u2705\t\u2014\t1,338\t\u2014\t\u2014\t0\t\u274C\t\u2705\t\u274C\t\u274C\t\u274C\t\u2705\t\u2705\t\u2014
+2025-05-17\t\u274C\t\u2705\t\u2705\t\u2705\t\u2014\t10,186\t\u2014\t\u2014\t0\t\u2705\t\u2705\t\u2705\t\u2705\t\u2705\t\u2705\t\u2705\t\u2014
+2025-05-18\t\u274C\t\u2705\t\u2705\t\u274C\t\u2014\t13,676\t\u2014\t\u2014\t0\t\u2705\t\u2705\t\u2705\t\u2705\t\u274C\t\u2705\t\u2705\t\u2014
+2025-05-19\t\u274C\t\u274C\t\u274C\t\u2705\t\u2014\t10,018\t\u2014\t\u2014\t0\t\u274C\t\u2705\t\u274C\t\u274C\t\u2014\t\u2705\t\u2705\t\u2014
+2025-05-20\t\u274C\t\u274C\t\u274C\t\u2705\t\u2014\t11,125\t\u2014\t\u2014\t0\t\u2705\t\u2705\t\u2705\t\u2705\t\u2014\t\u2705\t\u2705\t\u2014
+2025-05-21\t\u2705\t\u2705\t\u274C\t\u2705\t\u2014\t9,092\t\u2014\t\u2014\t0\t\u2705\t\u274C\t\u2705\t\u2705\t\u2705\t\u2705\t\u2705\t\u274C
+2025-05-22\t\u2705\t\u274C\t\u274C\t\u2705\t\u2014\t8,871\t5\t\u2014\t0\t\u274C\t\u274C\t\u2705\t\u274C\t\u274C\t\u2705\t\u2705\t\u274C
+2025-05-23\t\u2705\t\u274C\t\u274C\t\u2705\t\u2014\t4,882\t1\t\u2014\t0\t\u274C\t\u2705\t\u274C\t\u274C\t\u274C\t\u274C\t\u2705\t\u274C
+2025-05-24\t\u2705\t\u274C\t\u274C\t\u2705\t\u2014\t7,261\t1\t\u2014\t0\t\u274C\t\u274C\t\u274C\t\u274C\t\u274C\t\u274C\t\u2705\t\u2705
+2025-05-25\t\u2705\t\u274C\t\u2705\t\u2705\t\u2014\t9,934\t0\t\u2014\t1\t\u274C\t\u2705\t\u274C\t\u274C\t\u274C\t\u2705\t\u2705\t\u274C
+2025-05-26\t\u2705\t\u2705\t\u274C\t\u2705\t\u2014\t7,163\t4\t\u2014\t0\t\u2705\t\u274C\t\u274C\t\u274C\t\u274C\t\u274C\t\u2705\t\u274C
+2025-05-27\t\u2705\t\u274C\t\u274C\t\u274C\t\u2014\t8,532\t4\t\u2014\t0\t\u2705\t\u274C\t\u274C\t\u274C\t\u274C\t\u2705\t\u2705\t\u274C
+2026-05-28\t\u274C\t\u2705\t\u2705\t\u274C\t\u2014\t3,352\t4\t\u2014\t0\t\u274C\t\u274C\t\u274C\t\u274C\t\u274C\t\u274C\t\u2705\t\u274C
+2026-05-30\t\u274C\t\u274C\t\u2705\t\u2705\t\u2014\t1960\t1\t\u2014\t0\t\u274C\t\u274C\t\u274C\t\u274C\t\u274C\t\u274C\t\u2705\t\u274C
+2026-05-31\t\u274C\t\u2705\t\u2705\t\u274C\t\u2014\t2265\t0-1\t\u2014\t0\t\u274C\t\u274C\t\u274C\t\u274C\t\u274C\t\u274C\t\u2705\t\u274C
+2026-06-02\t\u274C\t\u2705\t\u274C\t\u2705\t\u2705\t6440\t4\t2\t0\t\u2705\t\u274C\t\u274C\t\u274C\t\u274C\t\u2705\t\u2705\t\u274C
+2026-06-03\t\u274C\t\u274C\t\u274C\t\u2705\t\u2705\t8356\t4\t2\t0\t\u274C\t\u274C\t\u274C\t\u274C\t\u274C\t\u2705\t\u2705\t\u274C
+
+=== Supplement Log ===
+\uD83D\uDC8A  SUPPLEMENT LOG
+Primary supplement record \u00B7 Morning stack + Evening stack \u00B7 Track adherence and correlate with HRV/sleep
+DATE\t\u2500\u2500 MORNING STACK \u2500\u2500\t\t\t\t\u2500\u2500 EVENING STACK \u2500\u2500
+DATE\tD3+K2\n5000IU AM\tOMEGA-3\n2g AM\tCREATINE\n5g AM\tTURMERIC\n500mg AM\tMAGNESIUM\nGLYCINATE PM\tASHWAGANDHA\n600mg PM\tZINC\n15mg PM
+CONFIRMED: Mag+Ashwagandha+Zinc = HRV 37-53ms  |  JI Sleep Aid = 59-79ms peaks  |  No supp baseline = 15-26ms
+2026-06-02\t\u2705\t\u2705\t\u2705\t\u274C\t\u2705\t\u274C\t\u274C
+2026-06-03\t\u274C\t\u274C\t\u2705\t\u274C\t\u2705\t\u2705\t\u2705
+
+=== Meal Library ===
+\uD83D\uDCDA  MEAL LIBRARY
+Go-to meal presets \u00B7 Claude auto-fills macros when user selects preset \u00B7 Add your go-to meals below
+Reference library \u2014 Claude estimates macros from descriptions \u00B7 User populates with go-to meals \u00B7 Variable meals flagged
+ID\tCATEGORY\tNAME\n(short label)\tDESCRIPTION\n(full \u2014 Claude estimates from this)\tEST.\nCAL\tEST.\nPROTEIN (g)\tEST.\nCARBS (g)\tEST.\nFAT (g)\tVARIABLE\n(yes/no)\tVARIABLE\nFIELD\tNOTES
+B1\tBreakfast\t\t\t\t\t\t\tYes\tNumber of eggs\tCalibrate on first use
+B2\tBreakfast\t\t\t\t\t\t\tNo
+B3\tBreakfast\t\t\t\t\t\t\tNo
+S1\tSnack\t\t\t\t\t\t\tNo
+S2\tSnack\t\t\t\t\t\t\tNo
+SH1\tShake\t\t\t\t\t\t\tYes\tScoop count\tClaude estimates per scoop from brand/flavor
+SH2\tShake\t\t\t\t\t\t\tYes\tScoop count
+L1\tLunch\t\t\t\t\t\t\tNo
+L2\tLunch\t\t\t\t\t\t\tNo
+L3\tLunch\t\t\t\t\t\t\tNo
+D1\tDinner\t\t\t\t\t\t\tNo
+D2\tDinner\t\t\t\t\t\t\tNo
+D3\tDinner\t\t\t\t\t\t\tNo
+D4\tDinner\t\t\t\t\t\t\tNo
+O1\tOther\t\t\t\t\t\t\tNo`;
+
+async function seed() {
+  const btn = document.querySelector('button');
+  const status = document.getElementById('status');
+  btn.disabled = true;
+  btn.textContent = 'Writing...';
+  status.style.display = 'block';
+  status.className = '';
+  status.textContent = 'Writing to KV...';
+  try {
+    const res = await fetch('/storage?key=tracker&action=write', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({key: 'tracker', value: DATA})
+    });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Write failed');
+    status.className = 'ok';
+    status.textContent = '✅ Done! ' + DATA.length + ' chars written. Delete seed.html from GitHub now.';
+    btn.textContent = 'Done';
+  } catch(e) {
+    status.className = 'err';
+    status.textContent = '❌ Error: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Retry';
+  }
+}
+</script>
+</body>
+</html>
