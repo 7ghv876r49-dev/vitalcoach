@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head><title>Vital Coach — Seed KV</title>
+<style>
+body { font-family: monospace; background: #1a1a1a; color: #eee; padding: 40px; max-width: 800px; }
+h2 { color: #1A9E72; }
+button { background: #1A9E72; color: white; border: none; padding: 16px 32px; font-size: 16px; border-radius: 8px; cursor: pointer; margin: 8px 8px 8px 0; }
+button:hover { background: #158a60; }
+#status { margin-top: 20px; font-size: 13px; padding: 16px; border-radius: 8px; line-height: 1.8; }
+.ok  { background: #1a3a2a; color: #1A9E72; border: 1px solid #1A9E72; }
+.err { background: #3a1a1a; color: #ff6060; border: 1px solid #ff6060; }
+pre { background: #111; padding: 16px; border-radius: 8px; font-size: 10px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+</style>
+</head>
+<body>
+<h2>🌱 Vital Coach — Clean KV Seed</h2>
+<table style="color:#ccc;font-size:13px;border-collapse:collapse;margin-bottom:20px;">
+<tr><td style="padding:3px 12px 3px 0">Session History</td><td style="color:#1A9E72">17 rows · 5/13–6/2</td></tr>
+<tr><td style="padding:3px 12px 3px 0">Oura Daily Log</td><td style="color:#1A9E72">22 rows · 5/13–6/3 · all dated</td></tr>
+<tr><td style="padding:3px 12px 3px 0">Daily Habits</td><td style="color:#1A9E72">22 rows · 5/13–6/3 · 5/29 recovered</td></tr>
+<tr><td style="padding:3px 12px 3px 0">Weight Library</td><td style="color:#1A9E72">51 rows</td></tr>
+<tr><td style="padding:3px 12px 3px 0">Supplement Log</td><td style="color:#1A9E72">2 rows · 6/2–6/3</td></tr>
+<tr><td style="padding:3px 12px 3px 0">Format</td><td style="color:#1A9E72">100% single-line · no literal newlines</td></tr>
+</table>
+
+<button onclick="seedKV()">🚀 Seed KV Now</button>
+<button onclick="verifyKV()">🔍 Verify KV</button>
+
+<div id="status"></div>
+
+<details style="margin-top:24px;">
+<summary style="cursor:pointer;color:#888;font-size:12px;">▶ Preview tracker data</summary>
+<pre id="preview"></pre>
+</details>
+
+<script>
+const TRACKER = `=== Session History ===
+2026-05-13	Houston Condo	Full Body — Calibration	90	20	✅	DB Bench Press 3×10 · Lat Pulldown 3×10 · DB Shoulder Press 3×10 · Goblet Squat 3×12 · Leg Extension 3×12 · DB Bicep Curl 3×12 · Tricep Extension 3×12 · Plank 3 sets (45s/45s/30s) · Walk ~0.5mi cooldown	—	—	—	—	—	—	—
+2026-05-14	Houston Condo	Strength — Legs + Core	85	18	✅	Goblet Squat 4×12 · DB Step-Up 3×10 each leg · DB RDL 3×12 · Prone Leg Curl 2×10@set7 + 1×10@set6 · Leg Extension 3×12 · Calf Raise 1×15 + 2×25 · Decline Sit-Up 1×12 + 2×15 · Plank 45s/45s/35s	306	114	157	—	—	—	—
+2026-05-16	Spring House	HIIT — Apple Fitness+	81	16	✅	Apple Fitness+ HIIT with Brian (20 min) · Hip-Hop/R&B · Squat Jumps, Striders, Skaters, Air Jacks, Core · HR Zones: Z1 4:08 · Z2 2:54 · Z3 4:23 · Z4 6:55 · Z5 1:57	166	144	168	—	—	—	—
+2026-05-16	Spring House	Strength — Apple Fitness+	81	16	✅	Apple Fitness+ Strength with Jenn (20 min) · Everything Rock · Overhead Press, Bent Over Rows, Reverse Flys, Front Raises · HR Zones: Z1 7:18 · Z2 11:12 · Z3 2:19	125	133	150	—	—	—	—
+2026-05-17	Spring House	Active Recovery — Yoga	91	22	❌	Apple Fitness+ Yoga with Dice (10 min) · Hip-Hop/R&B · Gentle mobility + stretching	36	92	119	—	—	—	—
+2026-05-18	Spring House	Active Recovery — Walk	88	17	❌	Outdoor Walk — 1.22 mi, 26 min · Spring neighborhood · Elevation gain 94ft	99	88	—	—	—	—	—
+2026-05-18	Spring House	Active Recovery — Yoga	88	17	❌	Apple Fitness+ Yoga with Jessica (10 min) · Chill Vibes · Morning session — mobility + stretching	24	79	88	—	—	—	—
+2026-05-18	Spring House	Active Recovery — Yoga	88	17	❌	Apple Fitness+ Yoga with Jessica (10 min) · Chill Vibes · Evening wind-down session 9:11-9:21pm	34	90	111	—	—	—	—
+2026-05-20	Spring House	Strength — Full Body	87	24	✅	Total Gym Chest Press — Level 6 × 3×25 · DB Row — 20lb × 15/20/20 · DB Goblet Squat — 25lb × 3×15 (pause at bottom) · Total Gym Row — Level 6 × 3×25 · DB Shoulder Press — 25lb × 3×10 · Forward Lunges — 20lb × 2×15 each leg · Stability Ball: Plank 2×30s + Crunches 2×20 + Ball Pass 2×10	217	97	142	—	—	—	—
+2026-05-20	Spring House	Active Recovery — Walk	87	24	❌	Outdoor Walk — 1.59 mi, 39 min · Spring neighborhood, flat terrain	124	92	—	—	—	—	—
+2026-05-20	Spring House	Active Recovery — Yoga	87	24	❌	Apple Fitness+ Yoga with Jessica (10 min) · Chill Vibes · Evening wind-down 9:54-10:05pm	25	81	94	—	—	—	—
+2026-05-25	Houston Condo	Strength — Full Body Circuit	91	17	✅	CIRCUIT — 3 rounds, 30s rest between exercises, 90s between rounds: Goblet Squat 35lb×15 · DB Bench 40lb×12 · DB Step-Up 20lb×10ea · DB Row 20lb×12ea · DB Shoulder Press 25lb×12 · DB RDL 35lb×12 · Bicep Curl 25lb×10 superset Tricep Ext Setting 5×10 · FINISHER: Decline Sit-Up 3×15 · Plank 2×45s · Calf Raise 25lb×2×25	340	132	164	—	—	—	—
+2026-05-27	Spring House	Active Recovery — Walk	91	24	✅	Outdoor Walk — 2.30 mi, 55:27 · Spring neighborhood · Elevation gain 31ft · Pace 24'02"/mi	185	83	—	—	—	—	—
+2026-05-28	Spring Clubhouse	Strength — Legs + Core (Clubhouse)	91	24	❌	PUSH: DB Bench 40lb×3×12 · DB Shoulder Press 30lb×3×10 (bumped from 25lb) | PULL: DB Row 30lb×3×12ea (bumped from 20lb) · DB Bicep Curl 30lb×3×10 (bumped from 25lb) | LEGS: Goblet Squat 35lb×3×15 · DB RDL 40lb×3×12 · Step-Up w/ Knee Drive 25lb×3×10ea | FINISHER 2×: Fwd Lunge 20lb×15ea · OH Tricep Press 20lb×12 · Plank 2×45s · Calf Raise 25lb×25	374	122	161	—	—	—	—	Intercostal strain post-session from bracing — confirmed muscular. All weight bumps confirmed. Step-up w/ knee drive = new standard.
+2026-05-31	Spring House	Strength — Upper Body + Core	86	23	❌	DB Bench Press — 3×15 @ 25lb (calibration Spring House bench) · DB Shoulder Press (seated) — 2×15 + 1×12 @ 25lb · TG Row — 3×25 @ Level 6 · TG Pullover — 3×25 @ Level 6 (NEW — calibration) · DB Bicep Curl — 3×15 @ 20lb · Stability Ball Crunch — 3×25 @ BW · Ball Pass — 3×10 @ BW · Stability Ball Plank — 2×30s @ BW · Swim — 5 min aerobic Zone 1-2 cooldown	167	102	137	34:14	34:09	0:00	0:00
+2026-06-01	Spring House	Cardio — Outdoor Run	—	—	❌	1.20 mi @ 8'14"/mi pace · effort 7/10	129	161	178	9:56	0:44	0:56	8:12	Strong Z4-5 output — 82% of run in Z4-5. Peak HR 178 new high.
+2026-06-02	Spring House	Cardio — Outdoor Run	85	20	❌	1.20 mi @ 7'41"/mi pace · effort 7/10 Hard	128	164	179	9:14	0:40	0:43	7:49	Avg HR 164 · 5:40 in Z5 · Two consecutive high-intensity runs 6/1+6/2 — prioritize recovery tomorrow
+
+=== Oura Daily Log ===
+2026-05-13	90	20	87	1.53	1.23	8.38	55	+0.1	13.6	—	—	First training day. Full body calibration + contrast therapy.
+2026-05-14	85	18	79	0.9	1.6	8.27	55	+0.3	13.1	—	—	Legs+core session + contrast therapy. Sleep latency 1hr. Deep sleep low 11%. Slightly elevated temp.
+2026-05-15	78	24	66	0.78	1.18	5.55	54	0.0	13	—	—	Rest day. Stressful night — stock position. Only 5h33m sleep. Daytime stress 2hrs vs 45m typical. HRV 24 highest so far despite poor sleep.
+2026-05-16	81	16	87	1.52	1.62	10.05	56	+0.8	13.5	—	—	HIIT+Strength Apple Fitness+ at Spring. Great sleep rebound 10h3m. Body temp +0.8°F elevated — resolved next day. HRV dipped to 16ms.
+2026-05-17	91	22	91	1.38	1.9	7.9	55	-0.1	13.2	—	—	Best scores so far — both 91! Bed 10:17pm. Wake 7:08am. REM excellent 24%. Body temp neutral. Sleep debt none. Yoga active recovery.
+2026-05-18	93	28	88	1.1	1.82	8.68	53	+0.1	13	53	—	NEW BEST readiness 93 + HRV 28ms! Max HRV 53ms peak. Bed 9:10pm. Wake 7:11am. Awake 1h20m restless but still excellent scores. RHR ticking down to 53. First full wind-down routine night.
+2026-05-19	88	17	91	1.18	1.98	8.57	57	-0.2	12.8	37	—	Readiness 88 + Sleep 91 — both excellent. HRV dipped to 17ms after 93 peak — normal recovery response. Max HRV 37ms. Bedtime 9:46pm. Wake 7:17am. SpO2 96%. Sleep efficiency 90% — best yet. All readiness contributors Optimal except sleep regularity Good. Sleep debt: none.
+2026-05-20	87	24	90	1.05	1.57	7.63	52	+0.2	13.2	55	—	RHR new low 52 bpm ⬇️ trending down all week! Max HRV 55ms new peak. Awake 1h23m — 3rd consecutive night with elevated wake time, clustering 3-4am. Chronotype flag: body clock slightly behind. Bedtime 10:55pm. Wake 7:56am. SpO2 97%. Sleep debt none.
+2026-05-21	89	26	80	1.07	1.52	6.75	52	-0.3	12.5	71	—	MAX HRV 71ms — new all-time peak! 🏆 Despite fragmented sleep. Awake 1h43m worst yet — dogs still in room. AC helped (body temp -0.3°F). Bedtime 10:27pm ✅. Wake 6:54am earlier than usual. RHR holding at 52 — new low sustained. SpO2 97%. Sleep debt none. JI sleep aid night 1 — max HRV suggests it's working.
+2026-05-22	82	28	71	0.67	0.97	5.47	52	-0.7	12.2	59	—	⚠️ OURA MISSED FIRST 2HRS — ring off until 12am. True total sleep ~7h33m per Apple Watch (score 93). Fell asleep 9:55pm — earliest yet! Body clock ALIGNED ✅ first time. Awake only 45m — BEST in days. NO DOGS = massive improvement. Body temp -0.7°F coldest yet — AC working perfectly. Max HRV 59ms. SpO2 99%. Deep sleep front-loaded (early night). Dog correlation confirmed: dogs in = 1h20-1h43m awake, no dogs = 45m.
+2026-05-23	93	27	90	1.1	1.78	8.68	52	+0.3	12.9	65	—	Readiness 93 'Bring it on!' Dogs NOT in room — but 2h16m awake. 4am natural wake — front-loaded deep sleeper confirmed. Used podcast to get back to sleep (worked but hit efficiency). Oura 90 vs Apple 80 — Oura rewards total sleep, Apple penalizes interruptions (9 wake-ups). Max HRV 65ms. RHR holding 52. Bedtime 10:19pm ✅. Body temp +0.3°F slightly up.
+2026-05-24	85	22	83	1.22	1.45	6.45	57	—	—	76	—	Bedtime 11:46pm — late. Short sleep 6h27m. Deep sleep 1h13m (19%) — best % in weeks! More sleep pressure from late bed. Max HRV 76ms — NEW ALL-TIME PEAK despite late night. Weekend low stress (1/5) likely key factor. RHR jumped to 57 from 52. Apple Watch: only 17min awake, 2 interruptions — much better than Oura reading.
+2026-05-25	91	17	91	—	—	8.15	55	—	—	—	—	Readiness 91 + Sleep 91 both excellent. BUT HRV only 17ms — dogs back in room! Dog correlation confirmed again: no dogs = 59-76ms HRV, dogs = 17-34ms. Apple Watch: 8h19m, score 87, deep 57min, awake 47min. Bedtime ~10:44pm ✅ close to target. Full body circuit workout today.
+2026-05-26	82	18	85	0.63	1.58	7.22	56	—	—	—	—	Dogs out but BARKED early in sleep — HRV tanked to 18ms same as dogs-in nights. KEY FINDING: acoustic disruption = same HRV impact as physical presence. Dogs need out AND quiet (closed door, separate room). Apple Watch: 92 score, 7h20m, deep 50min. Bedtime 10:08pm ✅. Fell back asleep easily each wake. Lots of dreaming. 1 unit alcohol noted.
+2026-05-27	90	21	86	0.65	1.68	7.07	55	—	—	48	—	Readiness 90 — bounce-back from 82 post-circuit. HRV 21ms (max 48ms). RHR 55. Sleep 86. Oura: 7h4m, 4 wake-ups, 25min awake. Bedtime ~10:52pm. Dogs out, no barking. JI taken. Stress 4/5 day — likely suppressing HRV. Blue blockers + screens missed.
+2026-05-28	91	24	87	1.62	1.73	7.22	55	0	13.1	47	—	Readiness 91 · Sleep 87 · HRV 24ms (max 47ms) · RHR 55 · Deep 1h37m · REM 1h44m · Awake 32m · Sleep start 10:08pm · Body temp +/-0 · Resp 13.1 · Efficiency 93%. Dogs out + quiet = best awake time recently. HRV suppressed by stress 4/5 + screens + no blue blockers 5/27.
+2026-05-29	85	24	83	1.03	1.38	6.77	56	—	—	79	—	Readiness 85 · Sleep 83 · HRV 24ms avg · MAX HRV 79ms — NEW ALL-TIME PEAK 🏆 · RHR 56 · Deep 1h2m (15%) · REM 1h23m (21%) · Light 4h21m · Awake 38m · Efficiency 91% · Sleep debt 10m LOW · Body clock ALIGNED ✅ · Bedtime ~10:53pm · Wake ~6:16am · Stress 4/5 + screens + no blue blockers 5/28 suppressed avg HRV despite new max peak.
+2026-05-30	70	20	60	0.9	0.62	4.73	61	-0.2	12.5	—	—	Readiness 70 · Sleep 60 (Low) · HRV 20ms · RHR 61 · Deep 54m (19%) · REM 37m (13%) · Light 3h13m (68%) · Awake 29m · Total 4h44m · Bedtime ~3:23am (very late — stayed up working on Claude) · Body temp -0.2°F · Resp 12.5 · Sleep debt 3h30m MODERATE · 3 screwdrivers afternoon + zero wind-down habits + extremely late bed all compounded.
+2026-05-31	86	23	85	1.13	1.88	6.65	53	-0.2	12.8	69	—	Readiness 86 · Sleep 85 · HRV 23ms avg · Max 69ms · RHR 53 · Deep 1h8m (17%) · REM 1h53m (28%) · Light 3h38m · Awake 45m · In bed 7h24m · Efficiency 90% · Sleep debt 4h10m MODERATE · Body clock 41min behind (late bed) · Temp -0.2°F · Resp 12.8/min · Strong bounce-back from 5/30 catastrophic night. Dogs out ✅ + JI ✅ = recovery working. Late bedtime ~11:40pm hurt duration.
+2026-06-01	82	23	76	1.45	1.47	5.78	55	-0.6	13	53	55	Readiness 82 · Sleep 76 · HRV 23ms avg · Max 53ms · RHR 55 · Min RHR 55 · Body Temp -0.6°F · Resp 13.0/min · AW: 5h47m total, 1h35m awake (6 wake-ups), REM 1h28m, Core 2h52m, Deep 1h27m · 5/31 habits: sunlight ✅ stretching ✅ stress 0-1 Fidelity 2.5hr X 1.0hr dogs out ✅ JI ✅ wind-down 2/8 (dogs out + JI only) · Bedtime score 30/30 but interruptions hurt (7/20).
+2026-06-02	85	20	87	0.77	—	7.90	57	-0.1	—	61	57	Readiness 85 · Sleep 87 · HRV 20ms avg · Max 61ms · RHR 57 · Min RHR 57 · Deep 0h46m · Total 7h54m · Body temp -0.1°F · Two consecutive Z4-5 runs 6/1+6/2
+2026-06-03	80	21	72	1.03	—	6.2	56	0.0	—	52	56	Readiness 80 · Sleep 72 · HRV 21ms avg · Max 52ms · RHR 56 · Min RHR 56 · Total sleep 6h12m · Awake 79min · Body temp +0.0°F · Two consecutive hard runs 6/1+6/2 · Partial wind-down: stretch ✅ dogs out ✅ bed by 10 ✅ mag ✅
+
+=== Weight Library ===
+DB Bench Press	Houston Condo	Dumbbells + bench	40 lb	40 lb	2026-05-13	Hold — build consistency before increasing.
+Lat Pulldown	Houston Condo	Combo machine	Setting 10	Setting 10	2026-05-13	Stay at setting 10 several sessions before increasing.
+DB Shoulder Press	Houston Condo	Dumbbells	30 lb	30 lb × 3×10	2026-05-28	Bumped from 25lb — hard but doable 5/28. Hold at 30lb and build consistency.
+Goblet Squat	Houston Condo	Single dumbbell	35 lb	35 lb	2026-05-14	Good calibration. Build before increasing.
+DB Step-Up	Houston Condo	Dumbbells + bench	25 lb	25 lb × 3×10 each	2026-05-28	NEW STANDARD: active leg stays on bench, drive knee up at top. Program as Step-Up w/ Knee Drive going forward.
+DB RDL	Houston Condo	Dumbbells	40 lb	40 lb × 3×12	2026-05-28	Confirmed bump to 40lb 5/28. Some lower back fatigue — muscular, not injury. Hold here.
+Prone Leg Curl	Houston Condo	Combo machine	Setting 6	Set7/7/6	2026-05-14	Start at setting 6 next leg day. Build slowly.
+Leg Extension	Houston Condo	Combo machine	Setting 8	Setting 8	2026-05-14	Hold here.
+Calf Raise	All	Step + dumbbells	25 lb	15/25/25	2026-05-14	3×25 going forward. Use step for full range.
+DB Bicep Curl	Houston Condo	Dumbbells	30 lb	30 lb × 3×10	2026-05-28	Bumped from 25lb 5/28. Hold and build to 3×12 before increasing.
+Tricep Extension	Houston Condo	Combo machine	Setting 5	Setting 6	2026-05-13	Try setting 5 next or keep 6 at 3×10.
+Decline Sit-Up	Houston Condo	Decline bench	Bodyweight	12/15/15	2026-05-14	3×15 going forward. Build to weighted.
+Plank	All	Bodyweight	Bodyweight	45s/45s/35s	2026-05-14	Build to 3×60s.
+Seated Cable Row	Houston Condo	Combo machine	—	—	—	Not yet calibrated
+Machine Chest Press	Houston Condo	Combo machine	—	—	—	Not yet calibrated
+DB Row	Houston Condo	Dumbbells	30 lb	30 lb × 3×12 each	2026-05-28	Bumped from 20lb — big jump. Confirms strength gain. Hold at 30lb.
+Barbell Back Squat	Spring Clubhouse	Barbell + rack	—	—	—	Not yet calibrated
+Barbell Deadlift	Spring Clubhouse	Barbell	—	—	—	Not yet calibrated
+Barbell RDL	Spring Clubhouse	Barbell	—	—	—	Not yet calibrated
+Barbell Row	Spring Clubhouse	Barbell	—	—	—	Not yet calibrated
+Barbell Overhead Press	Spring Clubhouse	Barbell + rack	—	—	—	Not yet calibrated
+Treadmill	Spring Clubhouse	Treadmill	—	—	—	Log speed/incline/duration
+Elliptical	Spring Clubhouse	Elliptical	—	—	—	Log resistance/duration
+Gym — self directed	Guanajuato	Local gym	—	—	—	Log after first session
+Total Gym Chest Press	Spring House	Total Gym Apex 65	Level 6	Level 6 × 3×25	2026-05-20	Build reps to 3×30 before increasing level.
+Total Gym Row/Pull	Spring House	Total Gym Apex 65	Level 6	Level 6 × 3×25	2026-05-20	Build reps to 3×30 before increasing level.
+Total Gym Crunches	Spring House	Total Gym Apex 65	Level 6	—	—	Not yet calibrated — add to core rotation next session.
+DB Row	Spring House	Dumbbells	20 lb	15/20/20	2026-05-20	Calibration. 3×20 next session.
+DB Goblet Squat	Spring House	Dumbbells	25 lb	3×15	2026-05-20	Same as Houston. Strong — try pause squat variation next.
+DB Shoulder Press	Spring House	Dumbbells	25 lb	3×10	2026-05-20	Same as Houston. Consistent.
+Forward Lunge	Spring House	Dumbbells	20 lb	2×15 each	2026-05-20	Calibration. Good. Build to 3×15.
+Stability Ball Crunch	Spring House	Stability Ball	BW	2×20	2026-05-20	Build to 3×25.
+Ball Pass	Spring House	Stability Ball	BW	2×10	2026-05-20	Great core move — keep in rotation. Build to 3×15.
+Stability Ball Plank	Spring House	Stability Ball	BW	2×30s	2026-05-20	Harder than floor plank. Build to 2×60s.
+DB Bench Press	Spring Clubhouse	Dumbbells + bench	40 lb	40 lb × 3×12	2026-05-28	Hold — same as Houston. Build consistency.
+DB Shoulder Press	Spring Clubhouse	Dumbbells	30 lb	30 lb × 3×10	2026-05-28	Bumped from 25lb. Hard but doable. Hold and build.
+DB Row	Spring Clubhouse	Dumbbells	30 lb	30 lb × 3×12 each	2026-05-28	Bumped from 20lb — big jump confirmed. Hold at 30lb.
+DB Bicep Curl	Spring Clubhouse	Dumbbells	30 lb	30 lb × 3×10	2026-05-28	Bumped from 25lb. Hold and build to 3×12.
+DB Goblet Squat	Spring Clubhouse	Dumbbells	35 lb	35 lb × 3×15	2026-05-28	Pause at bottom. Some lower back fatigue — muscular. Hold.
+DB RDL	Spring Clubhouse	Dumbbells	40 lb	40 lb × 3×12	2026-05-28	Confirmed bump from 35lb. Some back fatigue — hold here.
+DB Step-Up w/ Knee Drive	Spring Clubhouse	Dumbbells + bench	25 lb	25 lb × 3×10 each	2026-05-28	NEW STANDARD: active leg stays on bench, knee drive at top. Replace standard step-up.
+Forward Lunge	Spring Clubhouse	Dumbbells	20 lb	20 lb × 15 each (finisher)	2026-05-28	Very hard at end of leg block. Next session: reduce to 10 each or move earlier.
+Tricep Pushdown	Spring Clubhouse	Cable machine	—	Calibrate next session	2026-05-28	Replacing overhead tricep press at Clubhouse. Calibrate next session.
+Plank	Spring Clubhouse	Bodyweight	BW	2×45s	2026-05-28	Building to 3×60s.
+Calf Raise	Spring Clubhouse	Dumbbells + step	25 lb	25 lb × 25	2026-05-28	Single set in finisher. Build.
+DB Bench Press	Spring House	Dumbbells + adjustable bench	25 lb	25 lb x 3x15	2026-05-31	NEW bench added. Calibration. 3x15 easy — bump to 30lb when available.
+TG Pullover	Spring House	Total Gym Apex 65	Level 6	Level 6 x 3x25	2026-05-31	NEW. Straight-arm pullover on back. Hits lats, chest, triceps, core. Heavy rotation going forward.
+TG Tricep Extension	Spring House	Total Gym Apex 65	Level 6	— (calibrate next)	2026-05-31	NEW — added to library. Calibrate next Spring House session.
+TG Bicep Curl	Spring House	Total Gym Apex 65	Level 6	— (calibrate next)	2026-05-31	NEW — added to library. Calibrate next Spring House session.
+TG Chest Fly	Spring House	Total Gym Apex 65	Level 6	— (calibrate next)	2026-05-31	NEW — added to library. Calibrate next Spring House session.
+TG Crunch / Sit-Up	Spring House	Total Gym Apex 65	Level 6	— (calibrate next)	2026-05-31	NEW — added to library. Calibrate next Spring House session.
+
+=== Daily Habits ===
+2026-05-13	✅	❌	❌	❌	—	3,313	—	—	0	—	—	—	—	—	—	—	—
+2026-05-14	✅	❌	❌	❌	—	—	—	—	0	—	—	—	—	—	—	—	—
+2026-05-15	❌	❌	❌	❌	—	—	—	—	0	—	—	—	—	—	—	—	—
+2026-05-16	✅	❌	❌	✅	—	1,338	—	—	0	❌	✅	❌	❌	❌	✅	✅	—
+2026-05-17	❌	✅	✅	✅	—	10,186	—	—	0	✅	✅	✅	✅	✅	✅	✅	—
+2026-05-18	❌	✅	✅	❌	—	13,676	—	—	0	✅	✅	✅	✅	❌	✅	✅	—
+2026-05-19	❌	❌	❌	✅	—	10,018	—	—	0	❌	✅	❌	❌	—	✅	✅	—
+2026-05-20	❌	❌	❌	✅	—	11,125	—	—	0	✅	✅	✅	✅	—	✅	✅	—
+2026-05-21	✅	✅	❌	✅	—	9,092	—	—	0	✅	❌	✅	✅	✅	✅	✅	❌
+2026-05-22	✅	❌	❌	✅	—	8,871	5	—	0	❌	❌	✅	❌	❌	✅	✅	❌
+2026-05-23	✅	❌	❌	✅	—	4,882	1	—	0	❌	✅	❌	❌	❌	❌	✅	❌
+2026-05-24	✅	❌	❌	✅	—	7,261	1	—	0	❌	❌	❌	❌	❌	❌	✅	✅
+2026-05-25	✅	❌	✅	✅	—	9,934	0	—	1	❌	✅	❌	❌	❌	✅	✅	❌
+2026-05-26	✅	✅	❌	✅	—	7,163	4	—	0	✅	❌	❌	❌	❌	❌	✅	❌
+2026-05-27	✅	❌	❌	❌	—	8,532	4	—	0	✅	❌	❌	❌	❌	✅	✅	❌
+2026-05-28	❌	✅	✅	❌	—	3,352	4	—	0	❌	❌	❌	❌	❌	❌	✅	❌
+2026-05-29	❌	✅	✅	❌	❌	3352	4	—	0	❌	❌	❌	❌	❌	❌	✅	❌
+2026-05-30	❌	❌	✅	✅	—	1960	1	—	0	❌	❌	❌	❌	❌	❌	✅	❌
+2026-05-31	❌	✅	✅	❌	—	2265	0-1	—	0	❌	❌	❌	❌	❌	❌	✅	❌
+2026-06-01	❌	✅	✅	❌	❌	2265	1	—	0	❌	❌	❌	❌	❌	❌	✅	❌
+2026-06-02	❌	✅	❌	✅	✅	6440	4	2	0	✅	❌	❌	❌	❌	✅	✅	❌
+2026-06-03	❌	❌	❌	✅	✅	8356	4	2	0	❌	❌	❌	❌	❌	✅	✅	❌
+
+=== Supplement Log ===
+2026-06-02	✅	✅	✅	❌	✅	❌	❌
+2026-06-03	❌	❌	✅	❌	✅	✅	✅
+
+=== Meal Library ===
+B1	Breakfast							Yes	Number of eggs	Calibrate on first use
+B2	Breakfast							No
+B3	Breakfast							No
+S1	Snack							No
+S2	Snack							No
+SH1	Shake							Yes	Scoop count	Claude estimates per scoop from brand/flavor
+SH2	Shake							Yes	Scoop count
+L1	Lunch							No
+L2	Lunch							No
+L3	Lunch							No
+D1	Dinner							No
+D2	Dinner							No
+D3	Dinner							No
+D4	Dinner							No
+O1	Other							No`;
+document.getElementById('preview').textContent = TRACKER.substring(0, 3000) + '\n\n... (truncated)';
+
+async function seedKV() {
+  const status = document.getElementById('status');
+  status.className = '';
+  status.textContent = '⏳ Writing to KV...';
+  try {
+    const res = await fetch('/storage?key=tracker&action=write', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({key: 'tracker', value: TRACKER})
+    });
+    const data = await res.json();
+    if (data.ok) {
+      status.className = 'ok';
+      status.textContent = '✅ Seeded — ' + TRACKER.length + ' chars. Now click Verify KV. Then delete seed.html from GitHub.';
+    } else {
+      status.className = 'err';
+      status.textContent = '❌ Write failed: ' + (data.error || JSON.stringify(data));
+    }
+  } catch(e) {
+    status.className = 'err';
+    status.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+async function verifyKV() {
+  const status = document.getElementById('status');
+  status.textContent = '⏳ Reading KV...';
+  try {
+    const res = await fetch('/storage?key=tracker&action=read');
+    const data = await res.json();
+    const kv = data.value || '';
+
+    // Split into lines once — all checks work on lines
+    const lines = kv.split('\n');
+
+    function rowsInSection(sectionName) {
+      let inSection = false;
+      let count = 0;
+      let singleLine = true;
+      for (const line of lines) {
+        if (line.trim() === '=== ' + sectionName + ' ===') { inSection = true; continue; }
+        if (inSection && line.startsWith('=== ')) { break; }
+        if (inSection && line.trim()) {
+          const isDateRow = /^2026-\d{2}-\d{2}\t/.test(line);
+          if (isDateRow) count++;
+          else singleLine = false;
+        }
+      }
+      return { count, singleLine };
+    }
+
+    const oura   = rowsInSection('Oura Daily Log');
+    const habits = rowsInSection('Daily Habits');
+    const sess   = rowsInSection('Session History');
+    const supps  = rowsInSection('Supplement Log');
+    const has2025 = kv.includes('2025-05') || kv.includes('2025-06');
+
+    const allOk = oura.count===22 && habits.count===22 && sess.count===17 
+               && supps.count===2 && !has2025 
+               && oura.singleLine && habits.singleLine && sess.singleLine;
+
+    status.className = allOk ? 'ok' : 'err';
+    status.innerHTML =
+      '<strong>' + (allOk ? '✅ ALL CHECKS PASSED — KV is clean' : '⚠️ ISSUES FOUND') + '</strong><br><br>' +
+      'Oura Daily Log:  ' + oura.count + '/22 rows ' + (oura.count===22?'✅':'❌') + ' · Single-line: ' + (oura.singleLine?'✅':'❌') + '<br>' +
+      'Daily Habits:    ' + habits.count + '/22 rows ' + (habits.count===22?'✅':'❌') + ' · Single-line: ' + (habits.singleLine?'✅':'❌') + '<br>' +
+      'Session History: ' + sess.count + '/17 rows ' + (sess.count===17?'✅':'❌') + ' · Single-line: ' + (sess.singleLine?'✅':'❌') + '<br>' +
+      'Supplement Log:  ' + supps.count + '/2 rows ' + (supps.count===2?'✅':'❌') + '<br>' +
+      '2025- year errors: ' + (has2025?'❌ PRESENT':'✅ None') + '<br>' +
+      'Total KV chars: ' + kv.length;
+  } catch(e) {
+    status.className = 'err';
+    status.textContent = '❌ Error: ' + e.message;
+  }
+}
+</script>
+</body>
+</html>
