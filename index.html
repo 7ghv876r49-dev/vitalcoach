@@ -842,8 +842,8 @@ input[type="file"].hidden-file-input { display: none; }
     <div class="tab" onclick="showTab('thisweek',this)">This Week</div>
     <div class="tab" onclick="showTab('runlab',this)">Run Lab</div>
     <div class="tab" onclick="showTab('habits',this)">Habits</div>
-    <div class="tab" onclick="showTab('diet',this)">Diet</div>
-    <div class="tab" onclick="showTab('supps',this)">Supplements</div>
+    <div class="tab" onclick="showTab('diet',this)" style="display:none;">Diet</div>
+    <div class="tab" onclick="showTab('supps',this)" style="display:none;">Supplements</div>
     <div class="tab" onclick="showTab('highlights',this)">🏆</div>
     <div class="tab" onclick="showTab('inputs',this)">Inputs</div>
   </div>
@@ -1268,36 +1268,25 @@ input[type="file"].hidden-file-input { display: none; }
   </div>
 
   <!-- Headline stats -->
-  <!-- All six stats respond to the selected filter pill above -->
   <div class="run-stat-grid" id="rl-stats-grid">
     <div class="run-stat">
       <div class="run-stat-val" id="rl-runs-count">—</div>
-      <div class="run-stat-lbl" id="rl-runs-count-lbl">Z2 runs logged</div>
-    </div>
-    <div class="run-stat">
-      <div class="run-stat-val" id="rl-total-miles">—</div>
-      <div class="run-stat-lbl" id="rl-total-miles-lbl">Z2 miles</div>
-      <div class="run-stat-sub">total logged</div>
+      <div class="run-stat-lbl">Z2 runs logged</div>
     </div>
     <div class="run-stat">
       <div class="run-stat-val" id="rl-best-pace">—</div>
-      <div class="run-stat-lbl" id="rl-best-pace-lbl">Best Z2 pace</div>
+      <div class="run-stat-lbl">Best Z2 pace</div>
       <div class="run-stat-sub" id="rl-best-pace-date">—</div>
-    </div>
-    <div class="run-stat">
-      <div class="run-stat-val" id="rl-avg-pace">—</div>
-      <div class="run-stat-lbl" id="rl-avg-pace-lbl">Avg Z2 pace</div>
-      <div class="run-stat-sub">across filtered runs</div>
-    </div>
-    <div class="run-stat">
-      <div class="run-stat-val" id="rl-avg-hr">—</div>
-      <div class="run-stat-lbl">Avg HR</div>
-      <div class="run-stat-sub">bpm · aerobic control</div>
     </div>
     <div class="run-stat">
       <div class="run-stat-val" id="rl-avg-hrr">—</div>
       <div class="run-stat-lbl">Avg HRR 1-min</div>
-      <div class="run-stat-sub">bpm drop · fitness signal</div>
+      <div class="run-stat-sub">bpm drop</div>
+    </div>
+    <div class="run-stat">
+      <div class="run-stat-val" id="rl-total-miles">—</div>
+      <div class="run-stat-lbl">Total miles</div>
+      <div class="run-stat-sub">all runs</div>
     </div>
   </div>
 
@@ -1378,40 +1367,32 @@ input[type="file"].hidden-file-input { display: none; }
     <div class="panel-title">7-day habit streak</div>
     <div class="streak-chart-wrap"><canvas id="habitStreakChart"></canvas></div>
     <div class="streak-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div>Daily habits</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--blue);"></div>Wind-down habits</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div>Habits completed (of 8)</div>
     </div>
   </div>
 
   <div class="panel">
-    <div class="panel-title">Morning habits</div>
+    <div class="panel-title">Daily habits</div>
     <div class="habit-col">
-      <div class="habit-row"><div class="habit-name">🐕 Morning dog walk</div><span class="habit-check hc-yes" id="hc-dogwalk_am">✓</span></div>
-      <div class="habit-row"><div class="habit-name">☀️ Morning sunlight</div><span class="habit-check hc-yes" id="hc-sunlight">✓</span></div>
-      <div class="habit-row"><div class="habit-name">🌬️ Wim Hof breathing</div><span class="habit-check hc-no" id="hc-wimhof">✗</span></div>
-      <div class="habit-row"><div class="habit-name">🧊 Cold plunge</div><span class="habit-check hc-no" id="hc-coldplunge">✗</span></div>
-      <div class="habit-row"><div class="habit-name">🧘 Stretching</div><span class="habit-check hc-no" id="hc-stretching">✗</span></div>
-      <div class="habit-row"><div class="habit-name">💧 Hydration 2L+</div><span class="habit-check hc-yes" id="hc-hydration">✓</span></div>
-      <div class="habit-row"><div class="habit-name">😤 Stress</div><div id="habits-stress-dots" style="display:flex;gap:4px;align-items:center;"><span style="font-size:10px;color:var(--text-ter);">—</span></div></div>
-      <div class="habit-row"><div class="habit-name">🍷 Alcohol</div><span class="habit-val" id="habits-alcohol-val">—</span></div>
-      <div class="habit-row"><div class="habit-name">☕ Coffee</div><span class="habit-val" id="habits-coffee-val">—</span></div>
+      <div class="habit-row"><div class="habit-name">☀️ Morning Light</div><span class="habit-check hc-yes" id="hc-morninglight">✓</span></div>
+      <div class="habit-row"><div class="habit-name">☕ No Coffee</div><span class="habit-check hc-yes" id="hc-nocoffee">✓</span></div>
+      <div class="habit-row"><div class="habit-name">🧖 Sauna</div><span class="habit-check hc-yes" id="hc-sauna">✓</span></div>
+      <div class="habit-row"><div class="habit-name">🍷 No Alcohol</div><span class="habit-check hc-yes" id="hc-noalcohol">✓</span></div>
+      <div class="habit-row"><div class="habit-name">🕕 No Food after 6:30pm</div><span class="habit-check hc-yes" id="hc-nofood">✓</span></div>
+      <div class="habit-row"><div class="habit-name">📵 No Screens after 9:30pm</div><span class="habit-check hc-yes" id="hc-noscreens">✓</span></div>
+      <div class="habit-row"><div class="habit-name">🛏️ Bed by 10:30pm</div><span class="habit-check hc-yes" id="hc-bedby1030">✓</span></div>
+      <div class="habit-row"><div class="habit-name">🐕‍🦺 Dogs out of bedroom</div><span class="habit-check hc-yes" id="hc-nodogs">✓</span></div>
+      <div class="habit-row"><div class="habit-name">📍 Sleep location</div><span class="habit-val" id="habits-location-val">—</span></div>
     </div>
   </div>
 
   <div class="panel">
-    <div class="panel-title">Wind-down habits</div>
+    <div class="panel-title">Supplements</div>
     <div class="habit-col">
-      <div class="habit-row"><div class="habit-name">🕕 No food after 6:30pm</div><span class="habit-check hc-yes" id="hc-nofood">✓</span></div>
-      <div class="habit-row"><div class="habit-name">🚫💧 No liquids after 6:30pm</div><span class="habit-check hc-no" id="hc-noliquids">✗</span></div>
-      <div class="habit-row"><div class="habit-name">🐕 Post-dinner dog walk</div><span class="habit-check hc-yes" id="hc-dogwalk_pm">✓</span></div>
-      <div class="habit-row"><div class="habit-name">🕯️ Evening light discipline</div><span class="habit-check hc-no" id="hc-evelight">✗</span></div>
-      <div class="habit-row"><div class="habit-name">🚿 Hot shower</div><span class="habit-check hc-no" id="hc-hotshower">✗</span></div>
-      <div class="habit-row"><div class="habit-name">🧘‍♂️ Meditation + 4-7-8</div><span class="habit-check hc-no" id="hc-meditation">✗</span></div>
-      <div class="habit-row"><div class="habit-name">🐕‍🦺 Dogs not in bedroom</div><span class="habit-check hc-yes" id="hc-dogs">✓</span></div>
-      <div class="habit-row"><div class="habit-name">🛏️ In bed by 10pm</div><span class="habit-check hc-yes" id="hc-inbed">✓</span></div>
-      <div class="habit-row"><div class="habit-name">🧖 Sauna</div><span class="habit-val" id="habits-sauna-val">—</span></div>
-      <!-- Discreet row — value is masked until tapped, tap again to re-mask -->
-      <div class="habit-row" onclick="togglePrivateHabit()" style="cursor:pointer;"><div class="habit-name">🔒 Private</div><span class="habit-val" id="habits-orgasm-val" data-masked="1" data-val="—">•••</span></div>
+      <div class="habit-row"><div class="habit-name">☀️ D3 + K2</div><span class="habit-check hc-yes" id="hc-d3k2">✓</span></div>
+      <div class="habit-row"><div class="habit-name">🐟 Omega-3</div><span class="habit-check hc-yes" id="hc-omega3">✓</span></div>
+      <div class="habit-row"><div class="habit-name">⚡ Creatine</div><span class="habit-check hc-yes" id="hc-creatine">✓</span></div>
+      <div class="habit-row"><div class="habit-name">🌿 Magnesium</div><span class="habit-check hc-yes" id="hc-mag">✓</span></div>
     </div>
   </div>
 
@@ -1424,7 +1405,7 @@ input[type="file"].hidden-file-input { display: none; }
     <button class="qbtn" onclick="sendChat('habits','How does my stress level correlate with HRV?')">Stress vs HRV</button>
   </div>
   <div class="chat-messages" id="chat-habits">
-    <div class="msg coach"><div class="msg-avatar av-coach">VC</div><div class="msg-bubble">10/15 habits yesterday — solid. Wind-down was strong: no dogs, no screens, bed by 10:30. Missing breathwork and stretching most days. Those two are your biggest levers right now. What do you want to work on?</div></div>
+    <div class="msg coach"><div class="msg-avatar av-coach">VC</div><div class="msg-bubble">6/8 habits yesterday — solid. No alcohol, no screens after 9:30, dogs out of the bedroom. Missing morning light and the 10:30 bedtime most days. Those two are your biggest levers right now. What do you want to work on?</div></div>
   </div>
   <div class="chat-input-row">
     <input class="chat-input" id="input-habits" placeholder="Ask about your habits..." onkeydown="if(event.key==='Enter')sendChat('habits')"/>
@@ -1872,89 +1853,28 @@ input[type="file"].hidden-file-input { display: none; }
   <div class="input-divider"></div>
 
   <div class="input-section">
-    <div class="input-section-title">☀️ Morning habits <span style="font-weight:400;font-size:9px;color:var(--text-ter);margin-left:6px;" id="daily-count">0/6</span></div>
-    <div class="hgrid">
-      <div class="hg-item" id="hg-dogwalk_am" onclick="tapHabit('dogwalk_am',this)"><div class="hg-ico">🐕</div><div class="hg-lbl">Morning Dog Walk</div></div>
-      <div class="hg-item" id="hg-sunlight" onclick="tapHabit('sunlight',this)"><div class="hg-ico">☀️</div><div class="hg-lbl">Morning Sunlight</div><div style="font-size:8px;color:var(--text-ter);margin-top:1px;">within 30 min of waking</div></div>
-      <div class="hg-item" id="hg-wimhof" onclick="tapHabit('wimhof',this)"><div class="hg-ico">🌬️</div><div class="hg-lbl">Wim Hof Breathing</div></div>
-      <div class="hg-item" id="hg-coldplunge" onclick="tapHabit('coldplunge',this)"><div class="hg-ico">🧊</div><div class="hg-lbl">Cold Plunge</div></div>
-      <div class="hg-item" id="hg-stretching" onclick="tapHabit('stretching',this)"><div class="hg-ico">🧘</div><div class="hg-lbl">Stretching</div></div>
-      <div class="hg-item" id="hg-hydration" onclick="tapHabit('hydration',this)"><div class="hg-ico">💧</div><div class="hg-lbl">Hydration 2L+</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;margin-top:10px;">
-      <div>
-        <label style="font-size:11px;font-weight:500;color:var(--text-sec);display:block;margin-bottom:5px;">⚡ Stress <span style="font-size:9px;color:var(--text-ter);">0–5</span></label>
-        <div class="rating-input" id="stress-rating-row">
-          <button class="rating-btn" onclick="setRating('stress',0,this)">0</button>
-          <button class="rating-btn" onclick="setRating('stress',1,this)">1</button>
-          <button class="rating-btn" onclick="setRating('stress',2,this)">2</button>
-          <button class="rating-btn" onclick="setRating('stress',3,this)">3</button>
-          <button class="rating-btn" onclick="setRating('stress',4,this)">4</button>
-          <button class="rating-btn" onclick="setRating('stress',5,this)">5</button>
-        </div>
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:500;color:var(--text-sec);display:block;margin-bottom:5px;text-align:center;">☕ Coffee</label>
-        <input class="number-input" type="number" id="f-coffee" placeholder="0" inputmode="numeric" min="0" style="width:56px;display:block;"/>
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:500;color:var(--text-sec);display:block;margin-bottom:5px;text-align:center;">🍷 Alcohol</label>
-        <input class="number-input" type="number" id="f-alcohol" placeholder="0" inputmode="numeric" min="0" style="width:56px;display:block;"/>
-      </div>
-    </div>
-  </div>
-
-  <div class="input-divider"></div>
-
-  <div class="input-section">
-    <div class="input-section-title">🌙 Wind-down <span style="font-weight:400;font-size:9px;color:var(--text-ter);margin-left:6px;" id="windown-count">0/8</span></div>
+    <div class="input-section-title">✅ Daily habits <span style="font-weight:400;font-size:9px;color:var(--text-ter);margin-left:6px;" id="daily-count">0/8</span></div>
     <div class="hgrid hgrid-4">
-      <div class="hg-item" id="hg-nofood" onclick="tapHabit('nofood',this)"><div class="hg-ico">🕕</div><div class="hg-lbl">No food 6:30</div></div>
-      <div class="hg-item" id="hg-noliquids" onclick="tapHabit('noliquids',this)"><div class="hg-ico">🚫💧</div><div class="hg-lbl">No liquids 6:30</div></div>
-      <div class="hg-item" id="hg-dogwalk_pm" onclick="tapHabit('dogwalk_pm',this)"><div class="hg-ico">🐕</div><div class="hg-lbl">Post-Dinner Walk</div></div>
-      <div class="hg-item" id="hg-evelight" onclick="tapHabit('evelight',this)"><div class="hg-ico">🕯️</div><div class="hg-lbl">Evening Light <span onclick="event.stopPropagation();toggleCollapsible('evelight-info')" style="color:var(--text-ter);text-decoration:underline;">ⓘ</span></div></div>
-      <div class="hg-item" id="hg-hotshower" onclick="tapHabit('hotshower',this)"><div class="hg-ico">🚿</div><div class="hg-lbl">Hot Shower</div></div>
-      <div class="hg-item" id="hg-meditation" onclick="tapHabit('meditation',this)"><div class="hg-ico">🧘‍♂️</div><div class="hg-lbl">Meditation + 4-7-8</div></div>
-      <div class="hg-item" id="hg-nodogs" onclick="tapHabit('nodogs',this)"><div class="hg-ico">🐕‍🦺</div><div class="hg-lbl">Dogs Not in Bedroom</div></div>
-      <div class="hg-item" id="hg-inbed" onclick="tapHabit('inbed',this)"><div class="hg-ico">🛏️</div><div class="hg-lbl">In Bed by 10pm</div></div>
+      <div class="hg-item" id="hg-morninglight" onclick="tapHabit('morninglight',this)"><div class="hg-ico">☀️</div><div class="hg-lbl">Morning Light</div></div>
+      <div class="hg-item" id="hg-nocoffee" onclick="tapHabit('nocoffee',this)"><div class="hg-ico">☕</div><div class="hg-lbl">No Coffee</div></div>
+      <div class="hg-item" id="hg-sauna" onclick="tapHabit('sauna',this)"><div class="hg-ico">🧖</div><div class="hg-lbl">Sauna</div></div>
+      <div class="hg-item" id="hg-noalcohol" onclick="tapHabit('noalcohol',this)"><div class="hg-ico">🍷</div><div class="hg-lbl">No Alcohol</div></div>
+      <div class="hg-item" id="hg-nofood" onclick="tapHabit('nofood',this)"><div class="hg-ico">🕕</div><div class="hg-lbl">No Food 6:30pm</div></div>
+      <div class="hg-item" id="hg-noscreens" onclick="tapHabit('noscreens',this)"><div class="hg-ico">📵</div><div class="hg-lbl">No Screens 9:30pm</div></div>
+      <div class="hg-item" id="hg-bedby1030" onclick="tapHabit('bedby1030',this)"><div class="hg-ico">🛏️</div><div class="hg-lbl">Bed by 10:30pm</div></div>
+      <div class="hg-item" id="hg-nodogs" onclick="tapHabit('nodogs',this)"><div class="hg-ico">🐕‍🦺</div><div class="hg-lbl">Dogs Out of Bedroom</div></div>
     </div>
-    <div class="collapsible-body collapsed" id="body-evelight-info" style="font-size:10px;color:var(--text-sec);padding:8px 2px 0;line-height:1.6;">
-      <strong>Evening Light Discipline</strong> — all three required to check this off:<br>
-      1. At sundown: blue-light blocking glasses on, room lights dimmed<br>
-      2. 2 hours before bed: no phone or laptop<br>
-      3. 1 hour before bed: TV also off
-    </div>
-    <!-- Sauna timing — inline in Wind-down (standalone ⏱️ Timing section removed 2026-07-19) -->
-    <div style="display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;margin-top:12px;">
-      <label style="font-size:11px;font-weight:500;color:var(--text-sec);white-space:nowrap;">🧖 Sauna</label>
-      <select id="f-sauna" class="number-input" style="width:100%;">
-        <option value="">Not done</option>
-        <option>Early AM</option>
-        <option>Mid-morning</option>
-        <option>Midday</option>
-        <option>Afternoon</option>
-        <option>Early evening</option>
-        <option>Late evening</option>
-        <option>Pre-bed</option>
-      </select>
-    </div>
-    <!-- Discreet private entry — neutral label, collapsed by default -->
-    <div onclick="toggleCollapsible('orgasm-timing')" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:var(--text-ter);font-weight:500;margin-top:12px;">
-      <span class="past-week-chevron" id="tog-orgasm-timing">▾</span> 🔒 Private
-    </div>
-    <div class="collapsible-body collapsed" id="body-orgasm-timing" style="margin-top:8px;">
-      <select id="f-orgasm" class="number-input" style="width:100%;">
-        <option value="">Not done</option>
-        <option>Early AM</option>
-        <option>Mid-morning</option>
-        <option>Midday</option>
-        <option>Afternoon</option>
-        <option>Early evening</option>
-        <option>Late evening</option>
-        <option>Pre-bed</option>
+    <div style="margin-top:10px;">
+      <label style="font-size:11px;font-weight:500;color:var(--text-sec);display:block;margin-bottom:5px;">📍 Sleep location</label>
+      <select id="f-location" class="number-input" style="width:100%;">
+        <option>Spring TX</option>
+        <option>Houston Condo</option>
+        <option>Guanajuato</option>
+        <option>Other</option>
       </select>
     </div>
   </div>
+
 
   <div class="input-divider"></div>
 
@@ -2020,24 +1940,12 @@ input[type="file"].hidden-file-input { display: none; }
   <div class="input-divider"></div>
 
   <div class="input-section">
-    <div class="input-section-title">☀️ Morning supplements</div>
-    <div class="supp-toggle-grid" style="margin-bottom:12px;">
-      <div class="supp-toggle-item" id="stog-vitd" onclick="toggleSupp('vitd')"><span class="supp-toggle-icon">☀️</span><span class="supp-toggle-name">D3 + K2</span><span class="supp-toggle-check">○</span></div>
+    <div class="input-section-title">💊 Supplements</div>
+    <div class="supp-toggle-grid">
+      <div class="supp-toggle-item" id="stog-d3k2" onclick="toggleSupp('d3k2')"><span class="supp-toggle-icon">☀️</span><span class="supp-toggle-name">D3 + K2</span><span class="supp-toggle-check">○</span></div>
       <div class="supp-toggle-item" id="stog-omega3" onclick="toggleSupp('omega3')"><span class="supp-toggle-icon">🐟</span><span class="supp-toggle-name">Omega-3</span><span class="supp-toggle-check">○</span></div>
       <div class="supp-toggle-item" id="stog-creatine" onclick="toggleSupp('creatine')"><span class="supp-toggle-icon">⚡</span><span class="supp-toggle-name">Creatine</span><span class="supp-toggle-check">○</span></div>
-      <div class="supp-toggle-item" id="stog-lcitrulline" onclick="toggleSupp('lcitrulline')"><span class="supp-toggle-icon">💪</span><span class="supp-toggle-name">L-Citrulline</span><span class="supp-toggle-check">○</span></div>
-      <div class="supp-toggle-item" id="stog-electrolytes" onclick="toggleSupp('electrolytes')"><span class="supp-toggle-icon">⚗️</span><span class="supp-toggle-name">Electrolytes</span><span class="supp-toggle-check">○</span></div>
-      <div class="supp-toggle-item" id="stog-probiotic" onclick="toggleSupp('probiotic')"><span class="supp-toggle-icon">🦠</span><span class="supp-toggle-name">Probiotic</span><span class="supp-toggle-check">○</span></div>
-    </div>
-    <div class="input-section-title">🌙 Evening supplements</div>
-    <div class="supp-toggle-grid">
       <div class="supp-toggle-item" id="stog-mag" onclick="toggleSupp('mag')"><span class="supp-toggle-icon">🌿</span><span class="supp-toggle-name">Magnesium</span><span class="supp-toggle-check">○</span></div>
-      <div class="supp-toggle-item" id="stog-ashwa" onclick="toggleSupp('ashwa')"><span class="supp-toggle-icon">🌱</span><span class="supp-toggle-name">Ashwagandha</span><span class="supp-toggle-check">○</span></div>
-      <div class="supp-toggle-item" id="stog-zinc" onclick="toggleSupp('zinc')"><span class="supp-toggle-icon">🍵</span><span class="supp-toggle-name">Zinc</span><span class="supp-toggle-check">○</span></div>
-    </div>
-    <div style="margin-top:8px;">
-      <label style="font-size:10px;color:var(--text-ter);display:block;margin-bottom:4px;">Magnesium type/dose (optional)</label>
-      <input class="number-input" type="text" id="f-magdose" placeholder="e.g. Glycinate 400mg" style="width:100%;"/>
     </div>
   </div>
 
@@ -2345,8 +2253,7 @@ async function syncOuraPAT() {
 
 // ── FRICTIONLESS HABIT TAP ──
 const habitTapState = {};   // 'done' | 'skip' | undefined
-const DAILY_HABITS    = ['dogwalk_am','sunlight','wimhof','coldplunge','stretching','hydration'];
-const WINDOWN_HABITS  = ['nofood','noliquids','dogwalk_pm','evelight','hotshower','meditation','nodogs','inbed'];
+const HABITS = ['morninglight','nocoffee','sauna','noalcohol','nofood','noscreens','bedby1030','nodogs'];
 
 function tapHabit(id, el) {
   const cur = habitTapState[id];
@@ -2361,12 +2268,9 @@ function tapHabit(id, el) {
 }
 
 function updateHabitCounts() {
-  const dc = DAILY_HABITS.filter(h => habitTapState[h] === 'done').length;
-  const wc = WINDOWN_HABITS.filter(h => habitTapState[h] === 'done').length;
+  const dc = HABITS.filter(h => habitTapState[h] === 'done').length;
   const dlbl = document.getElementById('daily-count');
-  const wlbl = document.getElementById('windown-count');
-  if (dlbl) dlbl.textContent = dc + '/' + DAILY_HABITS.length;
-  if (wlbl) wlbl.textContent = wc + '/' + WINDOWN_HABITS.length;
+  if (dlbl) dlbl.textContent = dc + '/' + HABITS.length;
 }
 
 // Legacy compatibility — still used by Habits tab toggles
@@ -2845,9 +2749,6 @@ function buildCheckinText() {
   const steps     = document.getElementById('f-steps').value || '?';
 
   function h(id) { return habitTapState[id] === 'done' ? '✓' : habitTapState[id] === 'skip' ? '✗' : '—'; }
-  const stressVal = ratingState['stress'] !== undefined ? ratingState['stress'] : '—';
-  const alcohol   = document.getElementById('f-alcohol').value || '0';
-  const coffee    = document.getElementById('f-coffee').value || '0';
   const notes     = document.querySelector('textarea.text-input') ? document.querySelector('textarea.text-input').value : '';
 
   function s(id) { return document.getElementById('stog-'+id) && document.getElementById('stog-'+id).classList.contains('active') ? '✓' : '✗'; }
@@ -2855,21 +2756,17 @@ function buildCheckinText() {
   function toDateStr(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
   const today = toDateStr(new Date());
 
-  function d(id) { const el = document.getElementById('f-'+id); return el && el.value ? el.value : 'not done'; }
+  const location = document.getElementById('f-location') ? (document.getElementById('f-location').value || 'not specified') : 'not specified';
 
   return `MORNING CHECK-IN — ${today}
 
 OURA: Readiness ${readiness} · Sleep ${sleep} · Avg HRV ${hrv}ms · Max HRV ${hrvMax}ms · Min RHR ${rhr}bpm · Total sleep ${totalSlp} · Deep sleep ${deepSlp} · Awake ${awake}min · Body temp ${bodyTemp}°F · Steps ${steps}
 
-MORNING HABITS: Dog walk ${h('dogwalk_am')} · Sunlight (within 30min waking) ${h('sunlight')} · Wim Hof breathing ${h('wimhof')} · Cold plunge ${h('coldplunge')} · Stretching ${h('stretching')} · Hydration 2L+ ${h('hydration')}
-Stress ${stressVal}/5 · Coffee ${coffee} cups · Alcohol ${alcohol} units
+HABITS: Morning Light ${h('morninglight')} · No Coffee ${h('nocoffee')} · Sauna ${h('sauna')} · No Alcohol ${h('noalcohol')} · No Food after 6:30pm ${h('nofood')} · No Screens after 9:30pm ${h('noscreens')} · Bed by 10:30pm ${h('bedby1030')} · Dogs out of bedroom ${h('nodogs')}
 
-WIND-DOWN: No food 6:30 ${h('nofood')} · No liquids 6:30 ${h('noliquids')} · Post-dinner dog walk ${h('dogwalk_pm')} · Evening light discipline ${h('evelight')} · Hot shower ${h('hotshower')} · Meditation + 4-7-8 ${h('meditation')} · Dogs not in bedroom ${h('nodogs')} · In bed by 10pm ${h('inbed')}
+SLEEP LOCATION: ${location}
 
-TIMING: Sauna ${d('sauna')} · Orgasm ${d('orgasm')}
-
-SUPPLEMENTS AM: D3+K2 ${s('vitd')} · Omega-3 ${s('omega3')} · Creatine ${s('creatine')} · L-Citrulline ${s('lcitrulline')} · Electrolytes ${s('electrolytes')} · Probiotic ${s('probiotic')}
-SUPPLEMENTS PM: Magnesium ${s('mag')}${document.getElementById('f-magdose') && document.getElementById('f-magdose').value ? ' ('+document.getElementById('f-magdose').value+')' : ''} · Ashwagandha ${s('ashwa')} · Zinc ${s('zinc')}
+SUPPLEMENTS: D3+K2 ${s('d3k2')} · Omega-3 ${s('omega3')} · Creatine ${s('creatine')} · Magnesium ${s('mag')}
 ${notes ? '\nNOTES: ' + notes : ''}
 
 Please: 1) Give me my readiness summary and advice for today. 2) Log this data to the tracker (Oura Daily Log + Daily Habits tabs). 3) Output the updated tracker file.`;
@@ -2937,9 +2834,8 @@ ${tracker}`;
       // Use local date not UTC to avoid timezone offset creating wrong date
       const now = new Date();
       const today = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-      function hv(id) { return habitTapState[id] === 'done' ? '✅' : '—'; }
+      function hv(id) { return habitTapState[id] === 'done' ? '✅' : '❌'; }
       function sv(id) { return document.getElementById('stog-'+id) && document.getElementById('stog-'+id).classList.contains('active') ? '✅' : '❌'; }
-      const stressVal2 = ratingState['stress'] !== undefined ? String(ratingState['stress']) : '—';
 
       // Build lean rows — match exact column maps
       // Normalize deep sleep: convert "Xh Ym" or "XhYm" → decimal hours
@@ -2971,25 +2867,23 @@ ${tracker}`;
         '', // notes — blank on auto-write, Claude fills contextually
       ].join('\t');
 
+      // Col map (15 cols): 0=Date,1=MorningLight,2=NoCoffee,3=Sauna,4=NoAlcohol,
+      // 5=NoFood630,6=NoScreens930,7=BedBy1030,8=DogsOutOfBedroom,9=SleepLocation(text),
+      // 10=D3K2,11=Omega3,12=Creatine,13=Magnesium,14=Steps(hidden from checklist,
+      // still feeds Training tab trend)
       const habitsRow = [today,
-        hv('dogwalk_am'), hv('sunlight'), hv('wimhof'), hv('coldplunge'), hv('stretching'), hv('hydration'),
+        hv('morninglight'), hv('nocoffee'), hv('sauna'), hv('noalcohol'),
+        hv('nofood'), hv('noscreens'), hv('bedby1030'), hv('nodogs'),
+        document.getElementById('f-location') ? (document.getElementById('f-location').value || '—') : '—',
+        sv('d3k2'), sv('omega3'), sv('creatine'), sv('mag'),
         document.getElementById('f-steps').value||'',
-        stressVal2,
-        document.getElementById('f-coffee').value||'0',
-        document.getElementById('f-alcohol').value||'0',
-        hv('nofood'), hv('noliquids'), hv('dogwalk_pm'), hv('evelight'), hv('hotshower'), hv('meditation'), hv('nodogs'), hv('inbed'),
-        document.getElementById('f-sauna') ? (document.getElementById('f-sauna').value || '—') : '—',
-        document.getElementById('f-orgasm') ? (document.getElementById('f-orgasm').value || '—') : '—',
-      ].join('\t');
-
-      const suppRow = [today,
-        sv('vitd'), sv('omega3'), sv('creatine'), sv('lcitrulline'), sv('electrolytes'), sv('probiotic'),
-        sv('mag'), sv('ashwa'), sv('zinc'),
-        document.getElementById('f-magdose') ? (document.getElementById('f-magdose').value || '') : '',
       ].join('\t');
 
       // Build delta and merge into existing KV
-      const delta = `=== Oura Daily Log ===\n${ouraRow}\n\n=== Daily Habits ===\n${habitsRow}\n\n=== Supplement Log ===\n${suppRow}`;
+      // Supplement Log is no longer written going forward — supplements are
+      // now columns 10-13 of Daily Habits. Historical Supplement Log data
+      // stays in KV untouched, just no longer appended to.
+      const delta = `=== Oura Daily Log ===\n${ouraRow}\n\n=== Daily Habits ===\n${habitsRow}`;
 
       const existing = trackerData.value || '';
       const merged = existing ? mergeTrackerSections(existing, delta) : delta;
@@ -4034,41 +3928,18 @@ function renderHabitStreakFromKV() {
 
   const dateEl = document.getElementById('habits-section-date');
   const badgeEl = document.getElementById('habits-streak-badge');
+  const HABIT_COLS = [1,2,3,4,5,6,7,8]; // 8 core habits, rebuilt schema
   if (dateEl && last) {
     const d = new Date(last[0]+'T12:00:00');
     const ds = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    // Count ✅ across all boolean habit cols (excludes Sauna/Orgasm — those are
-    // free-text timing dropdowns, not booleans, at cols 19/20)
-    const allCols = [1,2,3,4,5,6,11,12,13,14,15,16,17,18];
-    const cnt = allCols.filter(i => (last[i]||'').includes('\u2705')).length;
-    dateEl.textContent = ds + ' — ' + cnt + '/14 habits';
-    // Wire numeric habit values from most recent row
-    // (Steps display row removed from the Habits tab 2026-07-19 — steps
-    // still live at col 7 in KV and still feed the Overview/Training cards
-    // and the 10k achievement; only this tab's row was dropped.)
-    const alcEl    = document.getElementById('habits-alcohol-val');
-    const coffeeEl = document.getElementById('habits-coffee-val');
-    const strEl    = document.getElementById('habits-stress-val');
-    const alcAmt = parseFloat(last[10]) || 0;
-    const alc    = last[10] && last[10] !== '—' ? last[10] + ' unit' + (alcAmt===1?'':'s') : '0 units';
-    const coffee = last[9] && last[9] !== '—' ? last[9] + ' cup' + (parseFloat(last[9])===1?'':'s') : '—';
-    const strVal = last[8] && last[8] !== '—' ? parseInt(last[8]) : null;
-    if (alcEl)    { alcEl.textContent = alc; alcEl.style.color = alcAmt > 0 ? 'var(--coral)' : 'var(--green)'; }
-    if (coffeeEl) coffeeEl.textContent = coffee;
-    // Render stress as colored dots
-    const dotsEl = document.getElementById('habits-stress-dots');
-    if (dotsEl && strVal !== null) {
-      dotsEl.innerHTML = Array.from({length:5}, (_,i) =>
-        '<div style="width:10px;height:10px;border-radius:50%;background:' +
-        (i < strVal ? (strVal >= 4 ? 'var(--coral)' : strVal >= 3 ? 'var(--amber)' : 'var(--green)') : 'var(--bg-ter)') +
-        '"></div>'
-      ).join('') + '<span style="font-size:10px;color:var(--text-sec);margin-left:4px;">' + strVal + '/5</span>';
-    }
+    const cnt = HABIT_COLS.filter(i => (last[i]||'').includes('\u2705')).length;
+    dateEl.textContent = ds + ' — ' + cnt + '/8 habits';
   }
+  // No Alcohol lives at col 4 — count consecutive ✅ from most recent day back
   const alcFree = (() => {
     let n = 0;
     for (let i = last7.length-1; i >= 0; i--) {
-      if ((parseFloat(last7[i][10])||0) === 0) n++; else break;
+      if ((last7[i][4]||'').includes('\u2705')) n++; else break;
     }
     return n;
   })();
@@ -4077,20 +3948,17 @@ function renderHabitStreakFromKV() {
   const canvas = document.getElementById('habitStreakChart');
   if (!canvas) return;
   const labels = last7.map(r => { const d=new Date(r[0]+'T12:00:00'); return (d.getMonth()+1)+'/'+d.getDate(); });
-  const dc = [1,2,3,4,5,6],   wc = [11,12,13,14,15,16,17,18];
-  const dCounts = last7.map(r => dc.filter(i=>(r[i]||'').includes('\u2705')).length);
-  const wCounts = last7.map(r => wc.filter(i=>(r[i]||'').includes('\u2705')).length);
+  const counts = last7.map(r => HABIT_COLS.filter(i=>(r[i]||'').includes('\u2705')).length);
   if (chartInstances['habitStreakChart']) chartInstances['habitStreakChart'].destroy();
   chartInstances['habitStreakChart'] = new Chart(canvas, {
     type:'bar', data:{ labels, datasets:[
-      {label:'Daily',     data:dCounts, backgroundColor:GREEN+'CC', borderRadius:3, stack:'s'},
-      {label:'Wind-down', data:wCounts, backgroundColor:BLUE+'CC',  borderRadius:3, stack:'s'},
+      {label:'Habits', data:counts, backgroundColor:GREEN+'CC', borderRadius:3},
     ]},
     options:{ responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{
         x:{ticks:{font:{size:9},color:tickColor(),maxRotation:0},grid:{display:false}},
-        y:{ticks:{font:{size:9},color:tickColor()},grid:{color:gridColor()},min:0,max:15,
+        y:{ticks:{font:{size:9},color:tickColor()},grid:{color:gridColor()},min:0,max:8,
            title:{display:true,text:'Habits completed',font:{size:9},color:tickColor()}}
       }
     }
@@ -4140,58 +4008,50 @@ function renderHabitsFromKV() {
   rows.sort((a,b) => b[0].localeCompare(a[0]));
   const r = rows[0]; // most recent
 
-  // Col map (21 cols, A-U):
-  // 0=Date,1=MorningDogWalk,2=MorningSunlight,3=WimHof,4=ColdPlunge,5=Stretching,6=Hydration,
-  // 7=Steps,8=Stress,9=Coffee,10=Alcohol,
-  // 11=NoFood,12=NoLiquids,13=PostDinnerDogWalk,14=EveLightDiscipline,15=HotShower,
-  // 16=Meditation,17=DogsNotInBedroom,18=InBedBy10,
-  // 19=Sauna(text),20=Orgasm(text)
+  // Col map (15 cols, rebuilt 2026-09):
+  // 0=Date,1=MorningLight,2=NoCoffee,3=Sauna,4=NoAlcohol,5=NoFood630,6=NoScreens930,
+  // 7=BedBy1030,8=DogsOutOfBedroom,9=SleepLocation(text),
+  // 10=D3K2,11=Omega3,12=Creatine,13=Magnesium,14=Steps(hidden)
+  // NOTE: rows logged before this rebuild use the old 18/21-col schema — the
+  // most recent pre-rebuild row will briefly misdisplay under these labels
+  // until the first new-schema row is submitted. Expected one-time transition
+  // artifact, not a bug.
   const map = [
-    ['hc-dogwalk_am',  1],
-    ['hc-sunlight',    2],
-    ['hc-wimhof',      3],
-    ['hc-coldplunge',  4],
-    ['hc-stretching',  5],
-    ['hc-hydration',   6],
-    ['hc-nofood',     11],
-    ['hc-noliquids',  12],
-    ['hc-dogwalk_pm', 13],
-    ['hc-evelight',   14],
-    ['hc-hotshower',  15],
-    ['hc-meditation', 16],
-    ['hc-dogs',       17],
-    ['hc-inbed',      18],
+    ['hc-morninglight', 1],
+    ['hc-nocoffee',      2],
+    ['hc-sauna',         3],
+    ['hc-noalcohol',     4],
+    ['hc-nofood',        5],
+    ['hc-noscreens',     6],
+    ['hc-bedby1030',     7],
+    ['hc-nodogs',        8],
   ];
   map.forEach(([id, col]) => {
     const el = document.getElementById(id);
     if (!el) return;
     const val = r[col] || '';
     const yes = val.includes('\u2705');
-    const no  = val.includes('\u274c') || val === '\u2014' || val === '—';
     el.textContent = yes ? '✓' : '✗';
     el.className = 'habit-check ' + (yes ? 'hc-yes' : 'hc-no');
   });
 
-  // Sauna and Orgasm are timing dropdowns (free text), not booleans — display
-  // the value directly rather than a check/cross.
-  const saunaEl = document.getElementById('habits-sauna-val');
-  if (saunaEl) saunaEl.textContent = r[19] || '—';
-  // Private (col U) — never render the value directly; stash it in a data
-  // attribute and keep the row masked until togglePrivateHabit() reveals it.
-  const orgasmEl = document.getElementById('habits-orgasm-val');
-  if (orgasmEl) {
-    orgasmEl.dataset.val = r[20] || '—';
-    orgasmEl.dataset.masked = '1';
-    orgasmEl.textContent = '•••';
-  }
-}
+  const locEl = document.getElementById('habits-location-val');
+  if (locEl) locEl.textContent = r[9] || '—';
 
-function togglePrivateHabit() {
-  const el = document.getElementById('habits-orgasm-val');
-  if (!el) return;
-  const masked = el.dataset.masked === '1';
-  el.textContent = masked ? (el.dataset.val || '—') : '•••';
-  el.dataset.masked = masked ? '0' : '1';
+  const suppMap = [
+    ['hc-d3k2',    10],
+    ['hc-omega3',  11],
+    ['hc-creatine',12],
+    ['hc-mag',     13],
+  ];
+  suppMap.forEach(([id, col]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = r[col] || '';
+    const yes = val.includes('\u2705');
+    el.textContent = yes ? '✓' : '✗';
+    el.className = 'habit-check ' + (yes ? 'hc-yes' : 'hc-no');
+  });
 }
 
 // ── WIRE SUPPLEMENT CHECKBOXES FROM KV ──
@@ -4516,7 +4376,7 @@ const SYSTEM_PROMPTS = {
   overview: `You are a concise AI health coach. User: 10 days tracked, readiness 82, HRV 28ms (peak 71ms), RHR 52 (from 56, target 48), sleep score 93 (best yet), 45min awake (from 1h43m). Key findings: dogs in bedroom +58min awake, AC 69F improves HRV, sleep supplements working. Training: 12 sessions/10 days, push session today. Diet: 148g protein (goal 160g), 2140 cal. Be comprehensive but concise, under 80 words.`,
   sleep: `You are a sleep-focused AI health coach. User sleep data: score 93/100, HRV 28ms (peak 71ms), RHR 52bpm, 45min awake, body temp -0.7F, 7h33m total. Key correlations: no dogs = -58min awake, AC 69F = better HRV, last meal before 6:30pm = +4ms HRV, magnesium+ashwagandha stack = higher HRV. Answer sleep questions specifically and concisely, under 80 words.`,
   training: `You are a training-focused AI health coach. User: readiness 82, 12 sessions in 10 days, push session today at Houston Condo. Weights: DB Bench 40lb, Shoulder Press 25lb, Goblet Squat 35lb, DB RDL moving to 40lb, Bicep 25lb, TG Chest Level 6, Lat Pulldown setting 10, Plank 3x60s. Also trains at Spring House. Apple Fitness+ for HIIT and yoga. Be specific with weights and programming, under 80 words.`,
-  habits: `You are a habit coach. User daily habits May 21: sunlight ✓, contrast ✓, breathwork ✗, stretching ✗, hydration ✓, steps 9092 (missed 10k), alcohol 0 ✓, stress 2/5, screen time 3/5. Wind-down: no food after 6:30 ✓, blue blockers ✓, evening breathwork ✗, evening stretch ✗, no screens 9:30 ✓, no dogs ✓, in bed 10:30 ✓. Biggest gaps: breathwork and stretching. 6-day alcohol streak. Under 80 words.`,
+  habits: `You are a habit coach. User daily habits yesterday: morning light ✓, no coffee ✗, sauna ✗, no alcohol ✓, no food after 6:30 ✓, no screens after 9:30 ✓, bed by 10:30 ✗, dogs out of bedroom ✓. Sleep location: Spring TX. Supplements: D3+K2 ✓, Omega-3 ✓, Creatine ✗, Magnesium ✓. Biggest gaps: bedtime and coffee cutoff. 6-day alcohol-free streak. Under 80 words.`,
   diet: `You are a nutrition-focused AI health coach who proactively suggests meals. Today is a push training day with readiness 82. Daily targets: 2200 cal, 160g protein, 250g carbs, 80g fat. Current intake: 1520 cal, 104g protein (56g short of goal). Last meal must be before 6:30pm — confirmed correlation with +4ms HRV next morning. Meal suggestions should be specific and practical, based on training day needs and macro gaps. Omega-3 also short — salmon for dinner closes both gaps. Three ways to log: accept suggestion (✓ Had it), pick a go-to preset, or describe freely. Under 80 words.`,
   supps: `You are a supplement-focused AI health coach. User stack: Morning: D3+K2, Omega-3, Creatine (missed yesterday), Turmeric. Evening: Magnesium Glycinate, Ashwagandha, Zinc. HRV response: no supps = 15-26ms, magnesium+ashwagandha = 37-53ms, adding sleep aid = 59-71ms peak. 6/7 taken yesterday. Adherence tracking 10 days. Answer supplement questions specifically, reference HRV data, under 80 words.`,
 };
@@ -5977,25 +5837,7 @@ function logWorkoutFromWatch() {
   // iOS will show its own "Shortcut not found" message; nothing to
   // catch or recover from on this side.
   showToast('Opening Shortcuts...', 'ok');
-  const url = 'shortcuts://run-shortcut?name=' + encodeURIComponent('Log Workout');
-  // iOS Safari — and especially the saved-to-Home-Screen standalone mode —
-  // is more reliable navigating custom URL schemes via a real anchor click
-  // than via window.location.href assignment; some iOS versions silently
-  // drop the latter with no error and no prompt ("nothing happens").
-  const a = document.createElement('a');
-  a.href = url;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => a.remove(), 1000);
-  // If this page is still visible ~1.6s later, the deep link almost
-  // certainly never fired (Shortcuts would have foregrounded itself) —
-  // surface a hint instead of failing silently.
-  setTimeout(() => {
-    if (!document.hidden) {
-      showToast('Shortcuts didn\'t open — is the Shortcut named exactly "Log Workout"?', 'error');
-    }
-  }, 1600);
+  window.location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent('Log Workout');
 }
 
 function sendToVCOp() {
@@ -6083,7 +5925,8 @@ function initRunLab() {
     runs = allRuns;
   }
 
-  renderRunLabStats(runs);
+  const z2runs = allRuns.filter(r => /z2 run/i.test(r[2]||''));
+  renderRunLabStats(z2runs, allRuns);
   renderRunLabInsights(allRuns);
   renderRunComboChart(runs);
   renderRunHRRChart(runs);
@@ -6108,55 +5951,30 @@ function paceToDisplay(dec) {
   return mins + ':' + String(secs).padStart(2,'0') + '/mi';
 }
 
-function renderRunLabStats(runs) {
-  // All six headline stats are computed over `runs` — the set already
-  // filtered by the active pill (Z2 / Intervals / Hybrid / All) — and
-  // the card labels re-title themselves to match.
+function renderRunLabStats(z2runs, allRuns) {
+  allRuns = allRuns || z2runs;
   const el = id => document.getElementById(id);
-  const LBL = { z2:'Z2', interval:'Interval', hybrid:'Hybrid', all:'All' };
-  const f = LBL[currentRunFilter] || 'All';
-  const prefix = currentRunFilter === 'all' ? '' : f + ' ';
 
-  if (el('rl-runs-count')) el('rl-runs-count').textContent = runs.length || '0';
-  if (el('rl-runs-count-lbl')) el('rl-runs-count-lbl').textContent =
-    (currentRunFilter === 'all' ? 'Runs' : f + ' runs') + ' logged';
+  if (el('rl-runs-count')) el('rl-runs-count').textContent = z2runs.length || '0';
 
-  // Best + avg pace within the filtered set (lowest min/mi = best)
+  // Best Z2 pace (lowest min/mi)
   let bestPace = null, bestPaceDate = null;
-  const paces = [];
-  runs.forEach(r => {
+  z2runs.forEach(r => {
     const p = paceToDec(getSessionCol(r,'pace'));
-    if (p) {
-      paces.push(p);
-      if (bestPace === null || p < bestPace) { bestPace = p; bestPaceDate = r[0]; }
-    }
+    if (p && (bestPace === null || p < bestPace)) { bestPace = p; bestPaceDate = r[0]; }
   });
   if (el('rl-best-pace')) el('rl-best-pace').textContent = bestPace ? paceToDisplay(bestPace) : '—';
-  if (el('rl-best-pace-lbl')) el('rl-best-pace-lbl').textContent = 'Best ' + prefix + 'pace';
-  if (el('rl-best-pace-date')) el('rl-best-pace-date').textContent = bestPaceDate
-    ? new Date(bestPaceDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})
-    : '—';
+  if (el('rl-best-pace-date') && bestPaceDate) {
+    el('rl-best-pace-date').textContent = new Date(bestPaceDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
 
-  const avgPace = paces.length ? paces.reduce((a,b)=>a+b,0) / paces.length : null;
-  if (el('rl-avg-pace')) el('rl-avg-pace').textContent = avgPace ? paceToDisplay(avgPace) : '—';
-  if (el('rl-avg-pace-lbl')) el('rl-avg-pace-lbl').textContent = 'Avg ' + prefix + 'pace';
+  // Avg HRR — all runs
+  const hrrVals = allRuns.filter(r => !(/walk|yoga/i.test(r[2]||''))).map(r => parseFloat(getSessionCol(r,'hrr1'))).filter(v => !isNaN(v) && v > 0);
+  if (el('rl-avg-hrr')) el('rl-avg-hrr').textContent = hrrVals.length ? Math.round(hrrVals.reduce((a,b)=>a+b)/hrrVals.length) : '—';
 
-  // Total miles within the filtered set
-  const totalMiles = runs.map(r => parseFloat(getSessionCol(r,'distance'))).filter(v => !isNaN(v)).reduce((a,b)=>a+b,0);
+  // Total miles — all runs
+  const totalMiles = allRuns.map(r => parseFloat(getSessionCol(r,'distance'))).filter(v => !isNaN(v)).reduce((a,b)=>a+b,0);
   if (el('rl-total-miles')) el('rl-total-miles').textContent = totalMiles > 0 ? totalMiles.toFixed(1) : '0';
-  if (el('rl-total-miles-lbl')) el('rl-total-miles-lbl').textContent = prefix ? prefix + 'miles' : 'Total miles';
-
-  // Avg HR within the filtered set (col I / AW Avg HR) — for Z2 this reads
-  // as zone discipline; for intervals, as intensity.
-  const hrVals = runs.map(r => parseFloat(getSessionCol(r,'avghr'))).filter(v => !isNaN(v) && v > 0);
-  if (el('rl-avg-hr')) el('rl-avg-hr').textContent = hrVals.length
-    ? Math.round(hrVals.reduce((a,b)=>a+b)/hrVals.length) : '—';
-
-  // Avg HRR 1-min within the filtered set (RUN_TYPES already excludes
-  // walks/yoga, so no extra type filter needed here)
-  const hrrVals = runs.map(r => parseFloat(getSessionCol(r,'hrr1'))).filter(v => !isNaN(v) && v > 0);
-  if (el('rl-avg-hrr')) el('rl-avg-hrr').textContent = hrrVals.length
-    ? Math.round(hrrVals.reduce((a,b)=>a+b)/hrrVals.length) : '—';
 }
 
 function renderRunLabInsights(runs) {
